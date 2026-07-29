@@ -131,6 +131,7 @@ declare const __CODEX_APP_VERSION__: string;
 let requestCounter = 0;
 let socket: WebSocket | null = null;
 let reconnectTimeoutId: number | null = null;
+let reloadAfterReconnect = false;
 const outboundQueue: RendererToMainMessage[] = [];
 const pendingInvokes = new Map<
   string,
@@ -243,6 +244,11 @@ function ensureSocket(): void {
     `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}/__backend/ipc`,
   );
   socket.addEventListener("open", () => {
+    if (reloadAfterReconnect) {
+      reloadAfterReconnect = false;
+      window.location.reload();
+      return;
+    }
     flushOutboundQueue();
   });
   socket.addEventListener("message", (event) => {
@@ -257,6 +263,7 @@ function ensureSocket(): void {
     }
   });
   socket.addEventListener("close", () => {
+    reloadAfterReconnect ||= messagePorts.size > 0;
     for (const port of messagePorts.values()) {
       port.close();
     }
@@ -322,6 +329,15 @@ function isUnhandledAddWorkspaceRootOptionMessage(value: unknown): value is {
   );
 }
 
+function isPickWorkspaceRootOptionMessage(value: unknown): value is {
+  allowMultiple?: unknown;
+  type: "electron-pick-workspace-root-option";
+} {
+  return (
+    isRecord(value) && value.type === "electron-pick-workspace-root-option"
+  );
+}
+
 function isOpenInBrowserMessage(value: unknown): value is {
   type: "open-in-browser";
   url: string;
@@ -345,6 +361,45 @@ function requestWorkspaceDirectoryEntries(
       directoryPath,
       directoriesOnly: true,
     });
+  });
+}
+
+function selectAndSendWorkspaceRoot(
+  channel: string,
+  message: {
+    root?: unknown;
+    type: "electron-add-new-workspace-root-option";
+  },
+): Promise<void> {
+  return openSelectWorkspaceRootDialog({
+    listDirectory: requestWorkspaceDirectoryEntries,
+  }).then((root) => {
+    if (!root) {
+      return;
+    }
+
+    enqueueMessage({
+      type: "ipc-renderer-send",
+      channel,
+      args: [{ ...message, root }],
+    });
+  });
+}
+
+function selectAndEmitWorkspaceRootPicked(): Promise<void> {
+  return openSelectWorkspaceRootDialog({
+    listDirectory: requestWorkspaceDirectoryEntries,
+  }).then((root) => {
+    if (!root) {
+      return;
+    }
+
+    emitRendererEvent("codex_desktop:message-for-view", [
+      {
+        type: "workspace-root-option-picked",
+        root,
+      },
+    ]);
   });
 }
 
@@ -434,16 +489,12 @@ export const ipcRenderer = {
         return handleLocalFilePickerMessage(args[0]);
       }
 
-      if (isUnhandledAddWorkspaceRootOptionMessage(args[0])) {
-        return openSelectWorkspaceRootDialog({
-          listDirectory: requestWorkspaceDirectoryEntries,
-        }).then((root) => {
-          if (!root) {
-            return undefined;
-          }
+      if (isPickWorkspaceRootOptionMessage(args[0])) {
+        return selectAndEmitWorkspaceRootPicked();
+      }
 
-          return invokeMain(channel, [{ ...args[0], root }]);
-        });
+      if (isUnhandledAddWorkspaceRootOptionMessage(args[0])) {
+        return selectAndSendWorkspaceRoot(channel, args[0]);
       }
     }
 
@@ -473,6 +524,34 @@ export const ipcRenderer = {
     return this.removeListener(channel, listener);
   },
   send(channel: string, ...args: unknown[]): void {
+    if (
+      channel === "codex_desktop:message-from-view" &&
+      args.length === 1 &&
+      isPickWorkspaceRootOptionMessage(args[0])
+    ) {
+      void selectAndEmitWorkspaceRootPicked().catch((error) => {
+        console.error(
+          "[electron-stub] failed to pick remote workspace root",
+          error,
+        );
+      });
+      return;
+    }
+
+    if (
+      channel === "codex_desktop:message-from-view" &&
+      args.length === 1 &&
+      isUnhandledAddWorkspaceRootOptionMessage(args[0])
+    ) {
+      void selectAndSendWorkspaceRoot(channel, args[0]).catch((error) => {
+        console.error(
+          "[electron-stub] failed to select remote workspace root",
+          error,
+        );
+      });
+      return;
+    }
+
     enqueueMessage({
       type: "ipc-renderer-send",
       channel,
