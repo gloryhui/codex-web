@@ -40,6 +40,47 @@ nix run github:0xcaff/codex-web
 
 then open <http://127.0.0.1:8214> in a browser.
 
+## Docker
+
+The included image builds the browser bundle and installs the Codex CLI version
+pinned by this repository (`0.144.0-alpha.4`). The container starts the web
+server on port `8214`, and uses `/workspace` as its default chat directory.
+
+Build it:
+
+```bash
+docker build -t codex-web:local .
+```
+
+Run it with a host directory available to chats and a persistent Codex config
+directory:
+
+```bash
+docker run --rm -p 8214:8214 \
+  -v /home/glory/Documents/Codex:/workspace \
+  -v /home/glory/.codex:/home/codex/.codex \
+  codex-web:local
+```
+
+`/home/codex/.codex` is the Codex CLI configuration directory in the container.
+Mounting the host's `.codex` directory makes its `config.toml` available for
+relay URL, API key, model, and other CLI settings. It can also persist
+authentication state. Keep this directory private because it may contain
+credentials.
+
+Alternatively, start the included Compose definition. It defaults to
+`/home/glory/Documents/Codex` for the workspace and `./.codex` for the config;
+override either path before starting it:
+
+```bash
+CODEX_WORKSPACE=/home/glory/Documents/Codex \
+CODEX_CONFIG_DIR=/home/glory/.codex \
+docker compose up --build
+```
+
+Open <http://127.0.0.1:8214>. The image runs as UID/GID `1000`; ensure the
+mounted workspace and config directory are writable by that user.
+
 ### sign in
 
 ensure the codex cli on the host machine is signed in before starting the

@@ -1,0 +1,12 @@
+--- a/webview/assets/app-initial~app-main~page-BF1QkwFT.js
++++ b/webview/assets/app-initial~app-main~page-BF1QkwFT.js
+@@ -80482,7 +80482,7 @@
+     o = i(`72216192`),
+     s;
+   t[0] === o
+     ? (s = t[1])
+-    : ((s = o?.get(`enable_i18n`, !1)), (t[0] = o), (t[1] = s));
++    : ((s = !0), (t[0] = o), (t[1] = s));
+   let c = s,
+     l = o?.get(`locale_source`, `IDE`),
+     u = Zo(or.localeOverride),

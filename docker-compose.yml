@@ -1,0 +1,12 @@
+services:
+  codex-web:
+    build:
+      context: .
+    image: codex-web:local
+    ports:
+      - "8214:8214"
+    volumes:
+      # Replace the left side with the directory that Codex should operate in.
+      - ${CODEX_WORKSPACE:-/home/glory/Documents/Codex}:/workspace
+      # Contains config.toml, auth.json, and other Codex CLI state.
+      - ${CODEX_CONFIG_DIR:-./.codex}:/home/codex/.codex

@@ -107,6 +107,13 @@ type StatsigGateEvaluation = {
   [key: string]: unknown;
 };
 
+type StatsigDynamicConfigEvaluation = {
+  name: string;
+  value: Record<string, unknown>;
+  get: <T>(key: string, fallback: T) => T;
+  [key: string]: unknown;
+};
+
 type ElectronShimState = {
   initialRoute?: string;
   initialSidebarState?: boolean;
@@ -117,6 +124,10 @@ type ElectronShimState = {
       evaluation: StatsigGateEvaluation,
       ...args: unknown[]
     ) => StatsigGateEvaluation | null;
+    getDynamicConfigOverride?: (
+      evaluation: StatsigDynamicConfigEvaluation,
+      ...args: unknown[]
+    ) => StatsigDynamicConfigEvaluation | null;
   };
 };
 
@@ -420,6 +431,27 @@ Object.assign(globalThis, {
 });
 
 electronShim.overrideAdapter = {
+  getDynamicConfigOverride(evaluation) {
+    if (evaluation.name !== "72216192") {
+      return null;
+    }
+
+    return {
+      ...evaluation,
+      value: {
+        ...evaluation.value,
+        enable_i18n: true,
+      },
+      get<T>(key: string, fallback: T): T {
+        if (key === "enable_i18n") {
+          return true as T;
+        }
+
+        return evaluation.get(key, fallback);
+      },
+    };
+  },
+
   getGateOverride(evaluation) {
     if (evaluation.name === "2911712394") {
       return {
