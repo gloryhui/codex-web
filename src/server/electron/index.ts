@@ -947,6 +947,7 @@ function createSessionStub(label: string): {
   protocol: typeof protocol;
   removeListener: (event: string, listener: StubListener) => unknown;
   setPermissionCheckHandler: (...args: unknown[]) => void;
+  setPermissionPromptHandler: (...args: unknown[]) => void;
   setPermissionRequestHandler: (...args: unknown[]) => void;
   setPreferredLanguages: (languages: string[]) => void;
   setWebsiteReportingEnabled: (enabled: boolean) => void;
@@ -998,6 +999,9 @@ function createSessionStub(label: string): {
     removeListener: emitter.removeListener,
     setPermissionCheckHandler(...args: unknown[]): void {
       log(`${label}.setPermissionCheckHandler`, args);
+    },
+    setPermissionPromptHandler(...args: unknown[]): void {
+      log(`${label}.setPermissionPromptHandler`, args);
     },
     setPermissionRequestHandler(...args: unknown[]): void {
       log(`${label}.setPermissionRequestHandler`, args);
