@@ -949,6 +949,7 @@ function createSessionStub(label: string): {
   setPermissionCheckHandler: (...args: unknown[]) => void;
   setPermissionRequestHandler: (...args: unknown[]) => void;
   setPreferredLanguages: (languages: string[]) => void;
+  setWebsiteReportingEnabled: (enabled: boolean) => void;
   webRequest: {
     onBeforeRequest: (...args: unknown[]) => void;
     onBeforeSendHeaders: (...args: unknown[]) => void;
@@ -1003,6 +1004,9 @@ function createSessionStub(label: string): {
     },
     setPreferredLanguages(languages: string[]): void {
       log(`${label}.setPreferredLanguages`, [languages]);
+    },
+    setWebsiteReportingEnabled(enabled: boolean): void {
+      log(`${label}.setWebsiteReportingEnabled`, [enabled]);
     },
     webRequest: {
       onBeforeRequest(...args: unknown[]): void {
