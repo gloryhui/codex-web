@@ -115,6 +115,7 @@ type StatsigDynamicConfigEvaluation = {
 };
 
 type ElectronShimState = {
+  currentSearch?: string;
   initialRoute?: string;
   initialSidebarState?: boolean;
   closeSidebar?: () => void;
@@ -485,14 +486,25 @@ const initialRoute = mapBrowserPathToInitialRoute(
   window.location.search,
 );
 electronShim.initialRoute = initialRoute.memoryPath;
+electronShim.currentSearch = new URL(
+  initialRoute.memoryPath,
+  window.location.origin,
+).search;
 
 if (initialRoute.browserPath) {
   window.history.pushState(undefined, "", initialRoute.browserPath);
 }
 
 electronShim.initialSidebarState = initialSidebarState;
+electronShim.closeSidebar = () => {
+  const trigger = document.querySelector<HTMLElement>(
+    '[data-app-shell-sidebar-trigger][aria-expanded="true"]',
+  );
+  trigger?.click();
+};
 electronShim.onMemoryNavigationChanged = (navigation) => {
   const path = navigation.location.pathname;
+  electronShim.currentSearch = navigation.location.search;
   if (
     navigation.action !== "POP" &&
     mobileMediaQuery.matches &&

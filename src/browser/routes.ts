@@ -17,8 +17,9 @@ export function mapBrowserPathToInitialRoute(pathname: string, search: string) {
     };
   }
 
+  const memoryPath = mapBrowserPathToRoute(pathname);
   return {
-    memoryPath: mapBrowserPathToRoute(pathname),
+    memoryPath: search ? `${memoryPath}${search}` : memoryPath,
   };
 }
 

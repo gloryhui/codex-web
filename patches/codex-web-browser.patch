@@ -1,0 +1,242 @@
+--- a/.vite/build/main-9ZiZs9Y1.js
++++ b/.vite/build/main-9ZiZs9Y1.js
+@@ -171832,25 +171832,17 @@
+       if (this.startupReady != null) {
+         let t = Promise.withResolvers(),
+           n = () => {
+-            t.reject(
+-              new DOMException(`Primary renderer was replaced`, `AbortError`),
+-            );
+-          },
+-          r = this.windowManager.subscribePrimaryWindowChanges((e) => {
+-            e?.webContents.id !== this.origin.id && n();
+-          });
++            t.reject(new DOMException(`Renderer was destroyed`, `AbortError`));
++          };
+         this.origin.once(`destroyed`, n);
+         try {
+           e = await Promise.race([this.startupReady, t.promise]);
+         } finally {
+-          (r(), this.origin.off(`destroyed`, n));
++          this.origin.off(`destroyed`, n);
+         }
+       }
+-      if (
+-        this.isDisposed ||
+-        this.windowManager.getPrimaryWindow()?.webContents.id !== this.origin.id
+-      )
+-        throw new DOMException(`Primary renderer was replaced`, `AbortError`);
++      if (this.origin.isDestroyed())
++        throw new DOMException(`Renderer was destroyed`, `AbortError`);
+       return this.includeStartupTiming ? e : void 0;
+     }
+     isSentryEnabled() {
+@@ -179672,7 +179664,7 @@
+   return new n.Hf(i, t, r).getRemoteMain();
+ }
+ var prt = class {
+-    encodingLevel = `structuredClonable`;
++    encodingLevel = `jsonCompatible`;
+     constructor(e) {
+       ((this.#e = e),
+         e.start(),
+--- a/.vite/build/preload.js
++++ b/.vite/build/preload.js
+@@ -206,8 +206,7 @@
+     getDesktopUserAgent: () => C({ appVersion: O.appVersion }),
+     getAppSessionId: () => O.codexAppSessionId,
+     getBuildFlavor: () => k,
+-    isDeviceCheckSupported: () =>
+-      process.platform === `darwin` && process.arch === `arm64`,
++    isDeviceCheckSupported: () => false,
+     isIntelMacBuild: () =>
+       process.platform === `darwin` && process.arch === `x64`,
+   };
+--- a/.vite/build/worker.js
++++ b/.vite/build/worker.js
+@@ -101533,6 +101533,7 @@
+   let r = nL(e.appVersion),
+     i = e.buildFlavor !== `prod`;
+   (FS({
++    enabled: !1,
+     dsn: e.dsn,
+     transport: (e) => {
+       let t = gu(e.bufferSize ?? 64);
+--- a/webview/assets/app-initial-512cdcfeac48.js
++++ b/webview/assets/app-initial-512cdcfeac48.js
+@@ -63353,11 +63353,16 @@
+   useTransitions: i,
+ }) {
+   let a = hd.useRef();
+-  a.current ??= a6e({ initialEntries: n, initialIndex: r, v5Compat: !0 });
++  a.current ??= a6e({
++    initialEntries: n ?? [window.__ELECTRON_SHIM__?.initialRoute ?? `/`],
++    initialIndex: r,
++    v5Compat: !0,
++  });
+   let o = a.current,
+     [s, c] = hd.useState({ action: o.action, location: o.location }),
+     l = hd.useCallback(
+       (e) => {
++        window.__ELECTRON_SHIM__?.onMemoryNavigationChanged?.(e);
+         i === !1 ? c(e) : hd.startTransition(() => c(e));
+       },
+       [i],
+@@ -300957,6 +300962,7 @@
+     n = kae(e.appVersion),
+     r = e.buildFlavor !== `prod`;
+   (_9i({
++    enabled: !1,
+     beforeBreadcrumb: Wae,
+     beforeSend: nge,
+     dsn: e.dsn,
+@@ -318857,7 +318863,7 @@
+       "--app-shell-main-toolbar-height": nt
+         ? `var(--height-toolbar-pane)`
+         : `0px`,
+-      "--spacing-token-safe-header-left": `${te.left / U + 6}px`,
++      "--spacing-token-safe-header-left": `0px`,
+       "--spacing-token-safe-header-right": `${te.right / U}px`,
+       "--app-shell-titlebar-left-inset": Ie,
+       "--app-shell-animated-left-panel-width": Se,
+@@ -343882,13 +343888,21 @@
+             })
+           : wva({ schema: y, text: e });
+   }
+-  let F = new Xte(null, {
+-      attributes: {
+-        "aria-multiline": `true`,
+-        dir: `auto`,
+-        role: `textbox`,
+-        spellcheck: `true`,
+-      },
++  let inputModeDisabled = !1,
++    getAttributes = () => ({
++      "aria-multiline": `true`,
++      dir: `auto`,
++      role: `textbox`,
++      spellcheck: `true`,
++      ...(inputModeDisabled ? {} : { inputmode: `none` }),
++    }),
++    setPointerInputMode = (e) => {
++      inputModeDisabled !== e &&
++        ((inputModeDisabled = e),
++        F.isDestroyed || F.setProps({ attributes: getAttributes }));
++    },
++    F = new Xte(null, {
++      attributes: getAttributes,
+       transformPastedText: D.transformPastedText,
+       transformPastedHTML(e) {
+         return (
+@@ -344023,6 +344037,15 @@
+           b.dispatchEvent(new qga(e)));
+       },
+       handleDOMEvents: {
++        mousedown() {
++          return (setPointerInputMode(!0), !1);
++        },
++        touchstart() {
++          return (setPointerInputMode(!0), !1);
++        },
++        blur() {
++          return (setPointerInputMode(!1), !1);
++        },
+         keydown: (e, t) => D.handleKeyEvent(t),
+         keyup(e, t) {
+           D.handleKeyEvent(t);
+@@ -563115,6 +563138,8 @@
+ function Zgc(e) {
+   let t = {
+     ...c_c,
++    overrideAdapter: window.__ELECTRON_SHIM__?.overrideAdapter,
++    loggingEnabled: `disabled`,
+     enableLiveValuesAutoRefresh: !0,
+     ...(e === !0 ? {} : { disableStorage: !0, loggingEnabled: `disabled` }),
+   };
+--- a/webview/assets/app-primary-aaee46b7f0ce.js
++++ b/webview/assets/app-primary-aaee46b7f0ce.js
+@@ -112864,7 +112864,11 @@
+       setComments: o,
+     } = e,
+     s = ut(Ir),
+-    c = a?.prefillPrompt,
++    c =
++      a?.prefillPrompt ??
++      new URLSearchParams(
++        window.__ELECTRON_SHIM__?.currentSearch ?? window.location.search,
++      ).get(`prompt`),
+     l = a?.prefillComposerDraft,
+     u = a?.prefillPriorConversation ?? null,
+     d = a?.prefillAddedFiles ?? null,
+@@ -125458,7 +125462,11 @@
+   let B = F(NCe, z),
+     V = X(Pl);
+   (s.get(Ny, V), F(Hye, V));
+-  let H = g?.prefillPrompt,
++  let H =
++      g?.prefillPrompt ??
++      new URLSearchParams(
++        window.__ELECTRON_SHIM__?.currentSearch ?? window.location.search,
++      ).get(`prompt`),
+     U;
+   t[16] !== o || t[17] !== u || t[18] !== V || t[19] !== i || t[20] !== d
+     ? ((U =
+@@ -129581,7 +129589,12 @@
+     );
+   }
+   new URLSearchParams(h);
+-  let G = _?.prefillPrompt ?? void 0,
++  let G =
++      _?.prefillPrompt ??
++      new URLSearchParams(
++        window.__ELECTRON_SHIM__?.currentSearch ?? window.location.search,
++      ).get(`prompt`) ??
++      void 0,
+     ee = G ?? i.get(gC),
+     te = G == null ? See(i) : void 0,
+     ne = `plain`;
+--- a/webview/assets/local-conversation-thread-e0c4b5e613f5.js
++++ b/webview/assets/local-conversation-thread-e0c4b5e613f5.js
+@@ -2611,6 +2611,10 @@
+   let D = _(eg, w, E),
+     O = _(null, i ? h : null) ?? [];
+   (_(null, h, { enabled: !1 })?.data, _(null, null));
++  (0, zy.useEffect)(() => {
++    let title = typeof y === `string` ? y.trim() : ``;
++    title && (document.title = `${title} | Codex`);
++  }, [y]);
+   let k = D,
+     A = O,
+     j = xc() === Zi,
+--- a/webview/index.html
++++ b/webview/index.html
+@@ -3,13 +3,13 @@
+   <head>
+     <meta name="referrer" content="origin" />
+     <!-- PROD_BASE_TAG_HERE -->
+-    <meta
+-      http-equiv="Content-Security-Policy"
+-      content="default-src &#39;none&#39;; img-src &#39;self&#39; app: blob: data: https:; child-src &#39;self&#39; blob: codex-sandbox://*.web-sandbox.oaiusercontent.com codex-sandbox://web-sandbox.oaiusercontent.com https://*.web-sandbox.oaiusercontent.com https://web-sandbox.oaiusercontent.com; frame-src &#39;self&#39; blob: codex-sandbox://*.web-sandbox.oaiusercontent.com codex-sandbox://web-sandbox.oaiusercontent.com https://*.web-sandbox.oaiusercontent.com https://cdn.plaid.com https://cdn.platform.openai.com https://web-sandbox.oaiusercontent.com https://www.youtube.com; worker-src &#39;self&#39; blob:; script-src &#39;self&#39; &#39;sha256-Z2/iFzh9VMlVkEOar1f/oSHWwQk3ve1qk/C2WdsC4Xk=&#39; &#39;wasm-unsafe-eval&#39; https://cdn.plaid.com/link/v2/stable/link-initialize.js; style-src &#39;self&#39; &#39;unsafe-inline&#39;; font-src &#39;self&#39; data:; media-src &#39;self&#39; app: blob: data:; connect-src &#39;self&#39; https://ab.chatgpt.com https://api.mapbox.com https://cdn.openai.com https://events.mapbox.com https://learn.chatgpt.com https://persistent.oaistatic.com https://production.plaid.com https://sandbox.plaid.com wss://chatgpt.com wss://ws.chatgpt-staging.com wss://ws.chatgpt.com;"
+-    />
++    <base href="/" />
++    <script type="module" src="./assets/preload.js"></script>
+     <meta charset="UTF-8" />
+     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+     <title>ChatGPT</title>
++    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
++    <link rel="manifest" href="/manifest.json" />
+     <style>
+       /* Dependency CSS can load before app.css, so establish Tailwind's layer order here. */
+       @layer theme, base, components, utilities;
+@@ -160,6 +160,11 @@
+       crossorigin
+       href="./assets/app-shared-b8a3f3143779.css"
+     />
++    <style>
++      .main-surface {
++        --spacing-token-safe-header-left: 0px;
++      }
++    </style>
+   </head>
+   <body tabindex="0" style="outline: none">
+     <div id="root">
