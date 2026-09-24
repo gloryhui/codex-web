@@ -709,8 +709,9 @@ async function startIpcBridgeServer(options: ServerOptions): Promise<void> {
     throw new Error("multiple main bundles found");
   }
 
-  const module = require(matches[0]!);
-  module.runMainAppStartup();
+  // Requiring the main bundle also loads bootstrap, which starts the app once
+  // Electron is ready. Calling runMainAppStartup here creates a second host.
+  require(matches[0]!);
 }
 
 async function main(args: string[]) {

@@ -821,18 +821,30 @@ const nativeTheme = {
   shouldUseInvertedColorScheme: false,
   themeSource: "system",
 };
+type StubNativeImage = {
+  isEmpty: () => boolean;
+  resize: (_options?: unknown) => StubNativeImage;
+  toDataURL: () => string;
+};
+
+function createNativeImageStub(empty: boolean): StubNativeImage {
+  const image: StubNativeImage = {
+    isEmpty: () => empty,
+    resize: () => image,
+    toDataURL: () =>
+      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL/nwAAAABJRU5ErkJggg==",
+  };
+  return image;
+}
+
 const nativeImage = {
-  createEmpty(): { isEmpty: () => boolean } {
+  createEmpty(): StubNativeImage {
     log("nativeImage.createEmpty", []);
-    return {
-      isEmpty: () => true,
-    };
+    return createNativeImageStub(true);
   },
-  createFromPath(imagePath: string): { isEmpty: () => boolean } {
+  createFromPath(imagePath: string): StubNativeImage {
     log("nativeImage.createFromPath", [imagePath]);
-    return {
-      isEmpty: () => !imagePath,
-    };
+    return createNativeImageStub(!imagePath);
   },
 };
 const powerMonitor = {
