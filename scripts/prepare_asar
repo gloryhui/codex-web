@@ -26,4 +26,5 @@ else
 fi
 patch --batch --forward --strip 1 --directory scratch/asar < patches/codex-web-browser.patch
 node scripts/patch_codex_web_bundle.mjs scratch/asar/.vite/build
+node scripts/patch_codex_web_renderer.mjs scratch/asar/webview/assets
 rm -rf scratch/asar/node_modules/better-sqlite3

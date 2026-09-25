@@ -706,7 +706,21 @@ ensureSocket();
 
 export const contextBridge = {
   exposeInMainWorld(_key: string, _api: unknown): void {
-    Reflect.set(window, _key, _api);
+    const exposedApi =
+      _key === "electronBridge" &&
+      _api !== null &&
+      typeof _api === "object"
+        ? new Proxy(_api, {
+            get(target, property, receiver) {
+              // The browser has no native menu host, so let the renderer show its DOM menu.
+              if (property === "showContextMenu") {
+                return undefined;
+              }
+              return Reflect.get(target, property, receiver);
+            },
+          })
+        : _api;
+    Reflect.set(window, _key, exposedApi);
   },
 };
 
