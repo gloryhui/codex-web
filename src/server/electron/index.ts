@@ -368,6 +368,17 @@ const appBase = {
       commandLineSwitches.delete(name);
     },
   },
+  dock: {
+    setIcon(icon: unknown): void {
+      log("app.dock.setIcon", [icon]);
+    },
+    setMenu(menu: unknown): void {
+      log("app.dock.setMenu", [menu]);
+    },
+    downloadFinished(path: string): void {
+      log("app.dock.downloadFinished", [path]);
+    },
+  },
   on(event: string, listener: (...args: unknown[]) => void): unknown {
     log("app.on", [event, listener]);
     return app;
@@ -887,6 +898,9 @@ const powerSaveBlocker = {
 };
 const screen = {
   ...createEmitterStub("screen"),
+  isCursorScreenPointSupported(): boolean {
+    return false;
+  },
   getAllDisplays(): Array<{
     id: number;
     scaleFactor: number;

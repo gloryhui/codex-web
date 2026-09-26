@@ -429,6 +429,32 @@ const initialSidebarState = !mobileMediaQuery.matches;
 const electronShim = (window.__ELECTRON_SHIM__ ??= {});
 const buildFlavor: "prod" | "dev" | "agent" | string = "prod";
 
+function syncMobileViewportHeight(): void {
+  if (!mobileMediaQuery.matches) {
+    document.documentElement.style.removeProperty(
+      "--codex-web-viewport-height",
+    );
+    return;
+  }
+
+  const visualViewport = window.visualViewport;
+  const height = Math.min(
+    window.innerHeight,
+    visualViewport?.height ?? window.innerHeight,
+  );
+  if (Number.isFinite(height) && height > 0) {
+    document.documentElement.style.setProperty(
+      "--codex-web-viewport-height",
+      `${Math.floor(height)}px`,
+    );
+  }
+}
+
+syncMobileViewportHeight();
+window.addEventListener("resize", syncMobileViewportHeight);
+window.visualViewport?.addEventListener("resize", syncMobileViewportHeight);
+mobileMediaQuery.addEventListener("change", syncMobileViewportHeight);
+
 Object.assign(globalThis, {
   process: {
     arch: "arm64",

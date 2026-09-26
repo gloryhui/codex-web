@@ -43,7 +43,7 @@ then open <http://127.0.0.1:8214> in a browser.
 ## Docker
 
 The included image builds the browser bundle and installs the Codex CLI version
-pinned by this repository (`0.144.0-alpha.4`). The container starts the web
+pinned by this repository (`0.157.1`). The container starts the web
 server on port `8214`, and uses `/workspace` as its default chat directory.
 
 Build it:

@@ -1,6 +1,6 @@
---- a/.vite/build/main-9ZiZs9Y1.js
-+++ b/.vite/build/main-9ZiZs9Y1.js
-@@ -171832,25 +171832,17 @@
+--- a/.vite/build/main-BefHSPFJ.js
++++ b/.vite/build/main-BefHSPFJ.js
+@@ -176443,25 +176443,17 @@
        if (this.startupReady != null) {
          let t = Promise.withResolvers(),
            n = () => {
@@ -31,10 +31,10 @@
        return this.includeStartupTiming ? e : void 0;
      }
      isSentryEnabled() {
-@@ -179672,7 +179664,7 @@
-   return new n.Hf(i, t, r).getRemoteMain();
+@@ -185989,7 +185981,7 @@
+   return new o.yt(r, t, n).getRemoteMain();
  }
- var prt = class {
+ var xit = class {
 -    encodingLevel = `structuredClonable`;
 +    encodingLevel = `jsonCompatible`;
      constructor(e) {
@@ -54,63 +54,75 @@
    };
 --- a/.vite/build/worker.js
 +++ b/.vite/build/worker.js
-@@ -101533,6 +101533,7 @@
-   let r = nL(e.appVersion),
+@@ -113582,6 +113582,7 @@
+   let r = uF(e.appVersion),
      i = e.buildFlavor !== `prod`;
-   (FS({
+   (rx({
 +    enabled: !1,
      dsn: e.dsn,
      transport: (e) => {
-       let t = gu(e.bufferSize ?? 64);
---- a/webview/assets/app-initial-512cdcfeac48.js
-+++ b/webview/assets/app-initial-512cdcfeac48.js
-@@ -63353,11 +63353,16 @@
-   useTransitions: i,
- }) {
-   let a = hd.useRef();
--  a.current ??= a6e({ initialEntries: n, initialIndex: r, v5Compat: !0 });
-+  a.current ??= a6e({
-+    initialEntries: n ?? [window.__ELECTRON_SHIM__?.initialRoute ?? `/`],
-+    initialIndex: r,
-+    v5Compat: !0,
-+  });
-   let o = a.current,
-     [s, c] = hd.useState({ action: o.action, location: o.location }),
-     l = hd.useCallback(
-       (e) => {
-+        window.__ELECTRON_SHIM__?.onMemoryNavigationChanged?.(e);
-         i === !1 ? c(e) : hd.startTransition(() => c(e));
-       },
-       [i],
-@@ -300957,6 +300962,7 @@
-     n = kae(e.appVersion),
+       let t = uu(e.bufferSize ?? 64);
+--- a/webview/assets/app-initial-0a6dd402dd72.js
++++ b/webview/assets/app-initial-0a6dd402dd72.js
+@@ -51978,6 +51978,7 @@
+     n = Iwe(e.appVersion),
      r = e.buildFlavor !== `prod`;
-   (_9i({
+   (Rht({
 +    enabled: !1,
-     beforeBreadcrumb: Wae,
-     beforeSend: nge,
+     beforeBreadcrumb: rre,
+     beforeSend: Qee,
      dsn: e.dsn,
-@@ -318857,7 +318863,7 @@
-       "--app-shell-main-toolbar-height": nt
-         ? `var(--height-toolbar-pane)`
-         : `0px`,
--      "--spacing-token-safe-header-left": `${te.left / U + 6}px`,
-+      "--spacing-token-safe-header-left": `0px`,
-       "--spacing-token-safe-header-right": `${te.right / U}px`,
-       "--app-shell-titlebar-left-inset": Ie,
-       "--app-shell-animated-left-panel-width": Se,
-@@ -343882,13 +343888,21 @@
-             })
-           : wva({ schema: y, text: e });
+@@ -108244,7 +108245,7 @@
+         "--app-shell-root-banner-height": ae,
+         "--app-shell-navigation-rail-width": $e,
+         "--app-shell-application-menu-height": et,
+-        "--spacing-token-safe-header-left": tt,
++        "--spacing-token-safe-header-left": `0px`,
+         "--spacing-token-safe-header-right": nt,
+         "--app-shell-animated-left-panel-width": void 0,
+         width: `calc(100vw / var(--codex-window-zoom))`,
+@@ -229848,10 +229849,23 @@
+     i;
+   t[0] === r
+     ? (i = t[1])
+-    : ((i = () =>
+-        nae([{ path: `*`, Component: iri, ErrorBoundary: ari }], {
+-          initialEntries: r,
+-        })),
++    : ((i = () => {
++        let router = nae([{ path: `*`, Component: iri, ErrorBoundary: ari }], {
++          initialEntries: r ?? [window.__ELECTRON_SHIM__?.initialRoute ?? `/`],
++        });
++        let lastKey = router.state.location.key;
++        if (window.__ELECTRON_SHIM__?.onMemoryNavigationChanged)
++          router.subscribe((state) => {
++            if (state.location.key === lastKey) return;
++            lastKey = state.location.key;
++            window.__ELECTRON_SHIM__?.onMemoryNavigationChanged?.({
++              action: state.historyAction,
++              location: state.location,
++              delta: 0,
++            });
++          });
++        return router;
++      }),
+       (t[0] = r),
+       (t[1] = i));
+   let [a] = (0, sri.useState)(i),
+@@ -346594,6 +346608,8 @@
+ function OTa(e) {
+   let t = {
+     ...zTa,
++    overrideAdapter: window.__ELECTRON_SHIM__?.overrideAdapter,
++    loggingEnabled: `disabled`,
+     enableLiveValuesAutoRefresh: !0,
+     ...(e === !0 ? {} : { disableStorage: !0, loggingEnabled: `disabled` }),
+   };
+@@ -402885,13 +402901,21 @@
    }
--  let F = new Xte(null, {
--      attributes: {
--        "aria-multiline": `true`,
--        dir: `auto`,
--        role: `textbox`,
--        spellcheck: `true`,
--      },
-+  let inputModeDisabled = !1,
+   I != null && u != null && !f && (I = LVn(I, u, e ?? void 0));
+   let L = u == null ? null : Quo(f ? u : null, (e) => Huo(v, e)),
++    inputModeDisabled = !1,
 +    getAttributes = () => ({
 +      "aria-multiline": `true`,
 +      dir: `auto`,
@@ -121,93 +133,75 @@
 +    setPointerInputMode = (e) => {
 +      inputModeDisabled !== e &&
 +        ((inputModeDisabled = e),
-+        F.isDestroyed || F.setProps({ attributes: getAttributes }));
++        R.isDestroyed || R.setProps({ attributes: getAttributes }));
 +    },
-+    F = new Xte(null, {
+     R = new rDe(null, {
+-      attributes: {
+-        "aria-multiline": `true`,
+-        dir: `auto`,
+-        role: `textbox`,
+-        spellcheck: `true`,
+-      },
 +      attributes: getAttributes,
-       transformPastedText: D.transformPastedText,
+       transformPastedText: k.transformPastedText,
        transformPastedHTML(e) {
          return (
-@@ -344023,6 +344037,15 @@
-           b.dispatchEvent(new qga(e)));
+@@ -403050,7 +403074,9 @@
        },
        handleDOMEvents: {
-+        mousedown() {
-+          return (setPointerInputMode(!0), !1);
-+        },
-+        touchstart() {
-+          return (setPointerInputMode(!0), !1);
-+        },
-+        blur() {
-+          return (setPointerInputMode(!1), !1);
-+        },
-         keydown: (e, t) => D.handleKeyEvent(t),
+         keydown: (e, t) => k.handleKeyEvent(t),
+-        mousedown: (e, t) => k.handleMouseDown(t),
++        mousedown: (e, t) => (setPointerInputMode(!0), k.handleMouseDown(t)),
++        touchstart: () => (setPointerInputMode(!0), !1),
++        blur: () => (setPointerInputMode(!1), !1),
          keyup(e, t) {
-           D.handleKeyEvent(t);
-@@ -563115,6 +563138,8 @@
- function Zgc(e) {
-   let t = {
-     ...c_c,
-+    overrideAdapter: window.__ELECTRON_SHIM__?.overrideAdapter,
-+    loggingEnabled: `disabled`,
-     enableLiveValuesAutoRefresh: !0,
-     ...(e === !0 ? {} : { disableStorage: !0, loggingEnabled: `disabled` }),
-   };
---- a/webview/assets/app-primary-aaee46b7f0ce.js
-+++ b/webview/assets/app-primary-aaee46b7f0ce.js
-@@ -112864,7 +112864,11 @@
-       setComments: o,
+           k.handleKeyEvent(t);
+           let { $from: n, empty: r } = e.state.selection;
+--- a/webview/assets/app-primary-620c47f764fe.js
++++ b/webview/assets/app-primary-620c47f764fe.js
+@@ -148712,7 +148712,7 @@
+       setComments: s,
      } = e,
-     s = ut(Ir),
--    c = a?.prefillPrompt,
-+    c =
-+      a?.prefillPrompt ??
-+      new URLSearchParams(
-+        window.__ELECTRON_SHIM__?.currentSearch ?? window.location.search,
-+      ).get(`prompt`),
-     l = a?.prefillComposerDraft,
-     u = a?.prefillPriorConversation ?? null,
-     d = a?.prefillAddedFiles ?? null,
-@@ -125458,7 +125462,11 @@
-   let B = F(NCe, z),
-     V = X(Pl);
-   (s.get(Ny, V), F(Hye, V));
--  let H = g?.prefillPrompt,
-+  let H =
-+      g?.prefillPrompt ??
-+      new URLSearchParams(
-+        window.__ELECTRON_SHIM__?.currentSearch ?? window.location.search,
-+      ).get(`prompt`),
-     U;
-   t[16] !== o || t[17] !== u || t[18] !== V || t[19] !== i || t[20] !== d
-     ? ((U =
-@@ -129581,7 +129589,12 @@
+     c = Cm(M),
+-    l = o?.prefillPrompt,
++    l = o?.prefillPrompt ?? new URLSearchParams(window.__ELECTRON_SHIM__?.currentSearch ?? window.location.search).get(`prompt`),
+     u = o?.prefillPromptFormat,
+     d = o?.prefillPromptOnlyIfEmpty,
+     f = o?.prefillLibraryFolders,
+@@ -162695,7 +162695,7 @@
+     ue = (0, w9.useRef)(null);
+   (c.get(IE, le), Q(tC, le));
+   let de = String(D?.focusComposerNonce ?? w),
+-    fe = D?.prefillPrompt,
++    fe = D?.prefillPrompt ?? new URLSearchParams(window.__ELECTRON_SHIM__?.currentSearch ?? window.location.search).get(`prompt`),
+     pe = D?.prefillPromptFormat,
+     me = D?.prefillPromptOnlyIfEmpty,
+     he = D?.prefillLibraryFolders,
+@@ -170264,9 +170264,9 @@
      );
    }
-   new URLSearchParams(h);
--  let G = _?.prefillPrompt ?? void 0,
-+  let G =
-+      _?.prefillPrompt ??
-+      new URLSearchParams(
-+        window.__ELECTRON_SHIM__?.currentSearch ?? window.location.search,
-+      ).get(`prompt`) ??
-+      void 0,
-     ee = G ?? i.get(gC),
-     te = G == null ? See(i) : void 0,
-     ne = `plain`;
---- a/webview/assets/local-conversation-thread-e0c4b5e613f5.js
-+++ b/webview/assets/local-conversation-thread-e0c4b5e613f5.js
-@@ -2611,6 +2611,10 @@
-   let D = _(eg, w, E),
-     O = _(null, i ? h : null) ?? [];
-   (_(null, h, { enabled: !1 })?.data, _(null, null));
-+  (0, zy.useEffect)(() => {
-+    let title = typeof y === `string` ? y.trim() : ``;
+   let G =
+-      g?.prefillPromptOnlyIfEmpty && g.prefillPrompt != null
++      (g?.prefillPromptOnlyIfEmpty && g.prefillPrompt != null
+         ? void 0
+-        : (g?.prefillPrompt ?? void 0),
++        : (g?.prefillPrompt ?? void 0)) ?? new URLSearchParams(window.__ELECTRON_SHIM__?.currentSearch ?? window.location.search).get(`prompt`),
+     K;
+   t[23] === m ? (K = t[24]) : ((K = Gd(m)), (t[23] = m), (t[24] = K));
+   let q = K,
+--- a/webview/assets/local-conversation-thread-45d4762b12ed.js
++++ b/webview/assets/local-conversation-thread-45d4762b12ed.js
+@@ -3306,6 +3306,10 @@
+   let E = Z(lg, C, T),
+     D = Z(null, i ? h : null) ?? [];
+   (Z(null, h, { enabled: !1 })?.data, Z(null, null));
++  (0, r().useEffect)(() => {
++    let title = typeof v === `string` ? v.trim() : ``;
 +    title && (document.title = `${title} | Codex`);
-+  }, [y]);
-   let k = D,
-     A = O,
-     j = xc() === Zi,
++  }, [v]);
+   let O = E,
+     k = D,
+     A = ui() === Fr,
 --- a/webview/index.html
 +++ b/webview/index.html
 @@ -3,13 +3,13 @@
@@ -216,7 +210,7 @@
      <!-- PROD_BASE_TAG_HERE -->
 -    <meta
 -      http-equiv="Content-Security-Policy"
--      content="default-src &#39;none&#39;; img-src &#39;self&#39; app: blob: data: https:; child-src &#39;self&#39; blob: codex-sandbox://*.web-sandbox.oaiusercontent.com codex-sandbox://web-sandbox.oaiusercontent.com https://*.web-sandbox.oaiusercontent.com https://web-sandbox.oaiusercontent.com; frame-src &#39;self&#39; blob: codex-sandbox://*.web-sandbox.oaiusercontent.com codex-sandbox://web-sandbox.oaiusercontent.com https://*.web-sandbox.oaiusercontent.com https://cdn.plaid.com https://cdn.platform.openai.com https://web-sandbox.oaiusercontent.com https://www.youtube.com; worker-src &#39;self&#39; blob:; script-src &#39;self&#39; &#39;sha256-Z2/iFzh9VMlVkEOar1f/oSHWwQk3ve1qk/C2WdsC4Xk=&#39; &#39;wasm-unsafe-eval&#39; https://cdn.plaid.com/link/v2/stable/link-initialize.js; style-src &#39;self&#39; &#39;unsafe-inline&#39;; font-src &#39;self&#39; data:; media-src &#39;self&#39; app: blob: data:; connect-src &#39;self&#39; https://ab.chatgpt.com https://api.mapbox.com https://cdn.openai.com https://events.mapbox.com https://learn.chatgpt.com https://persistent.oaistatic.com https://production.plaid.com https://sandbox.plaid.com wss://chatgpt.com wss://ws.chatgpt-staging.com wss://ws.chatgpt.com;"
+-      content="default-src &#39;none&#39;; img-src &#39;self&#39; app: blob: data: https:; child-src &#39;self&#39; blob: codex-sandbox://*.web-sandbox.oaiusercontent.com codex-sandbox://web-sandbox.oaiusercontent.com https://*.web-sandbox.oaiusercontent.com https://web-sandbox.oaiusercontent.com; frame-src &#39;self&#39; blob: codex-sandbox://*.web-sandbox.oaiusercontent.com codex-sandbox://web-sandbox.oaiusercontent.com https://*.web-sandbox.oaiusercontent.com https://cdn.plaid.com https://cdn.platform.openai.com https://mfe.prod.us-exp-api.experiancs.com https://mfe.uat.us-exp-api.experiancs.com https://web-sandbox.oaiusercontent.com https://www.youtube.com; worker-src &#39;self&#39; blob:; script-src &#39;self&#39; &#39;sha256-Z2/iFzh9VMlVkEOar1f/oSHWwQk3ve1qk/C2WdsC4Xk=&#39; &#39;wasm-unsafe-eval&#39; https://cdn.plaid.com/link/v2/stable/link-initialize.js https://persistent.oaistatic.com/voice/silero-vad-v6/ort-wasm-simd-threaded.30dd851d9c00622940500f71ddd2ff8820c5cb65270816080175b958705385a8.module.js; style-src &#39;self&#39; &#39;unsafe-inline&#39;; font-src &#39;self&#39; data:; media-src &#39;self&#39; app: blob: data: https:; connect-src &#39;self&#39; https://ab.chatgpt.com https://api.mapbox.com https://cdn.openai.com https://events.mapbox.com https://learn.chatgpt.com https://persistent.oaistatic.com https://production.plaid.com https://sandbox.plaid.com wss://chatgpt.com wss://ws.chatgpt-staging.com wss://ws.chatgpt.com;"
 -    />
 +    <base href="/" />
 +    <script type="module" src="./assets/preload.js"></script>
@@ -228,13 +222,32 @@
      <style>
        /* Dependency CSS can load before app.css, so establish Tailwind's layer order here. */
        @layer theme, base, components, utilities;
-@@ -160,6 +160,11 @@
+@@ -160,6 +160,30 @@
        crossorigin
-       href="./assets/app-shared-b8a3f3143779.css"
+       href="./assets/app-shared-6e7047a700cb.css"
      />
 +    <style>
 +      .main-surface {
 +        --spacing-token-safe-header-left: 0px;
++      }
++
++      @media (max-width: 768px) {
++        body,
++        #root {
++          height: var(--codex-web-viewport-height, 100dvh);
++        }
++      }
++
++      @media (max-width: 768px) and (pointer: coarse) {
++        [data-app-action-sidebar-scroll] {
++          touch-action: pan-y;
++          overscroll-behavior-y: contain;
++          -webkit-overflow-scrolling: touch;
++        }
++
++        [data-app-action-sidebar-scroll] .touch-none {
++          touch-action: pan-y;
++        }
 +      }
 +    </style>
    </head>

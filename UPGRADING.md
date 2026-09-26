@@ -3,6 +3,10 @@
 instructions for upgrading codex-web to point at a new version of upstream
 Codex Desktop.
 
+Before changing the extracted bundle, use [CUSTOMIZATIONS.md](CUSTOMIZATIONS.md)
+as the per-feature regression and code index. Verify each listed behavior in
+the new unmodified bundle, then carry forward only the adjustments still needed.
+
 ## backing up
 
 we will start by generating a scratch directory and backing it up. first, let's
@@ -32,19 +36,12 @@ DEV=1 nix develop --command yarn run prepare:asar
 cp -r scratch scratch-new-version-unmodified
 ```
 
-## upgrading the codex-cli version
+## codex-cli version
 
-this part can be run concurrently with the rest of the upgrade process. make
-sure to wait for its completion before doing validation. run it in a subagent.
-
-run the following to get the version of the new codex-cli
-
-```bash
-scratch/ChatGPT.app/Contents/Resources/codex --version
-```
-
-then update the `nix/codex/default.nix` file's `version` field and hashes to
-point to the new version.
+The web extraction does not automatically upgrade codex-cli. Keep the pinned
+`0.157.1` version in `nix/codex/default.nix` and `Dockerfile` unless a later
+Desktop change specifically requires a CLI update. If that decision is made,
+update both pins and their hashes independently of the web patch migration.
 
 ## porting over patches
 
@@ -79,8 +76,8 @@ the patches were applied as expected.
 ## validation
 
 to validate things are still working, we'll first validate the server, then the
-client. before starting this step, make sure to wait for the
-`upgrading the codex-cli version` subagent to finish.
+client. Also run the regression checks in [CUSTOMIZATIONS.md](CUSTOMIZATIONS.md)
+before treating the extraction as complete.
 
 to validate the server, run the following
 
