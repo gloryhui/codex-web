@@ -21,6 +21,7 @@
 | WEB-13 本地附件 | 浏览器选择单个/多个文件后可上传到 Web 服务端，返回可供 Desktop 会话引用的路径；取消选择不留下错误附件。 | [`src/browser/files.ts`](src/browser/files.ts) 中 `isLocalFilePickerMessage`、`openBrowserFilePicker`、`uploadFiles`、`sendFetchResponse`；[`src/browser/shim.ts`](src/browser/shim.ts) 中 `handleLocalFilePickerMessage`；[`src/server/main.ts`](src/server/main.ts) 中 `/__backend/upload`。 | 上传图片及普通文件、多个文件，取消一次选择；确认会话能访问附件，不把客户端本机路径误当服务端路径。 |
 | WEB-14 外部链接 | Desktop 发送的 `open-in-browser` 消息在浏览器打开目标地址。 | [`src/browser/shim.ts`](src/browser/shim.ts) 中 `isOpenInBrowserMessage` 和 `window.open`。 | 从会话中打开外部链接，确认新标签目标正确，原会话保留。 |
 | WEB-15 Web 功能门控 | 浏览器所需的两个 Statsig gate override 继续按当前语义生效，尤其远程控制入口；不能因重提取丢失接线。 | [`src/browser/shim.ts`](src/browser/shim.ts) 中 `getGateOverride`、`2911712394`、`1042620455`；[`patches/codex-web-browser.patch`](patches/codex-web-browser.patch) 中 `overrideAdapter`。 | 对照新版未修改包识别 gate 的实际用途，再检查 Web 端对应入口与可用状态；若 gate ID/用途变了，不能沿用旧编号盲目开启。 |
+| WEB-16 Git 目录监听依赖 | Desktop worker 在 Web 服务端加载 `@parcel/watcher` 时能成功导入，避免 Git 目录监听报 `ERR_MODULE_NOT_FOUND`。 | [`package.json`](package.json)、[`package-lock.json`](package-lock.json) 中 `@parcel/watcher`；提取包的 `scratch/asar/package.json` 和 `.vite/build/worker.js` 搜 `@parcel/watcher`。 | 在服务端执行 `import("@parcel/watcher")`，打开 Git 工作区后核对日志无该模块缺失；若新版 worker 不再依赖它，可移除本仓库依赖及本项。 |
 
 ## 每次提取的处理规则
 
