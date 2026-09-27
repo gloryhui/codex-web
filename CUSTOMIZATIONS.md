@@ -22,6 +22,7 @@
 | WEB-14 外部链接 | Desktop 发送的 `open-in-browser` 消息在浏览器打开目标地址。 | [`src/browser/shim.ts`](src/browser/shim.ts) 中 `isOpenInBrowserMessage` 和 `window.open`。 | 从会话中打开外部链接，确认新标签目标正确，原会话保留。 |
 | WEB-15 Web 功能门控 | 浏览器所需的两个 Statsig gate override 继续按当前语义生效，尤其远程控制入口；不能因重提取丢失接线。 | [`src/browser/shim.ts`](src/browser/shim.ts) 中 `getGateOverride`、`2911712394`、`1042620455`；[`patches/codex-web-browser.patch`](patches/codex-web-browser.patch) 中 `overrideAdapter`。 | 对照新版未修改包识别 gate 的实际用途，再检查 Web 端对应入口与可用状态；若 gate ID/用途变了，不能沿用旧编号盲目开启。 |
 | WEB-16 Git 目录监听依赖 | Desktop worker 在 Web 服务端加载 `@parcel/watcher` 时能成功导入，避免 Git 目录监听报 `ERR_MODULE_NOT_FOUND`。 | [`package.json`](package.json)、[`package-lock.json`](package-lock.json) 中 `@parcel/watcher`；提取包的 `scratch/asar/package.json` 和 `.vite/build/worker.js` 搜 `@parcel/watcher`。 | 在服务端执行 `import("@parcel/watcher")`，打开 Git 工作区后核对日志无该模块缺失；若新版 worker 不再依赖它，可移除本仓库依赖及本项。 |
+| WEB-17 代码片段复制 | 浏览器中点击代码片段复制按钮，内容应进入**当前浏览器客户端**的剪贴板；HTTP 页面无法使用 Async Clipboard API 时仍能在点击手势中复制。 | [`src/browser/shim.ts`](src/browser/shim.ts) 中 `copyTextToClipboard`、`copyTextWithSelection`；[`scripts/patch_codex_web_clipboard.mjs`](scripts/patch_codex_web_clipboard.mjs) 将代码片段共用的复制入口接到浏览器。 | 在 HTTPS/localhost 和普通 HTTP 页面分别点击代码片段复制，粘贴核对原文；失败时才显示错误。若新版已直接使用浏览器剪贴板，移除脚本、shim 分支和本项。 |
 
 ## 每次提取的处理规则
 

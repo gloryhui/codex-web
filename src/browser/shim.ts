@@ -119,6 +119,10 @@ type ElectronShimState = {
   initialRoute?: string;
   initialSidebarState?: boolean;
   closeSidebar?: () => void;
+  copyTextToClipboard?: (
+    text: string | Promise<string>,
+    targetDocument: Document,
+  ) => Promise<void>;
   onMemoryNavigationChanged?: (navigation: MemoryNavigationChange) => void;
   overrideAdapter?: {
     getGateOverride?: (
@@ -428,6 +432,77 @@ const mobileMediaQuery = matchMedia("(max-width: 768px)");
 const initialSidebarState = !mobileMediaQuery.matches;
 const electronShim = (window.__ELECTRON_SHIM__ ??= {});
 const buildFlavor: "prod" | "dev" | "agent" | string = "prod";
+
+function copyTextWithSelection(
+  text: string,
+  targetDocument: Document,
+): boolean {
+  const container = targetDocument.body ?? targetDocument.documentElement;
+  if (!container) return false;
+
+  const textarea = targetDocument.createElement("textarea");
+  textarea.value = text;
+  textarea.readOnly = true;
+  Object.assign(textarea.style, {
+    left: "0",
+    opacity: "0",
+    position: "fixed",
+    top: "0",
+  });
+
+  const previouslyFocused = targetDocument.activeElement as HTMLElement | null;
+  const selection = targetDocument.getSelection();
+  const ranges = selection
+    ? Array.from({ length: selection.rangeCount }, (_, index) =>
+        selection.getRangeAt(index).cloneRange(),
+      )
+    : [];
+
+  container.appendChild(textarea);
+  let copied = false;
+  try {
+    textarea.focus();
+    textarea.select();
+    copied = targetDocument.execCommand("copy");
+  } catch {
+    copied = false;
+  } finally {
+    textarea.remove();
+    previouslyFocused?.focus?.({ preventScroll: true });
+    if (selection) {
+      selection.removeAllRanges();
+      for (const range of ranges) selection.addRange(range);
+    }
+  }
+
+  return copied;
+}
+
+function copyTextToClipboard(
+  text: string | Promise<string>,
+  targetDocument: Document,
+): Promise<void> {
+  const copy = (value: string): Promise<void> => {
+    const clipboard = targetDocument.defaultView?.navigator.clipboard;
+    const fallback = (): Promise<void> =>
+      copyTextWithSelection(value, targetDocument)
+        ? Promise.resolve()
+        : Promise.reject(new Error("Browser clipboard write failed"));
+
+    if (clipboard?.writeText) {
+      try {
+        return clipboard.writeText(value).catch(fallback);
+      } catch {
+        return fallback();
+      }
+    }
+    return fallback();
+  };
+
+  return typeof text === "string" ? copy(text) : text.then(copy);
+}
+
+electronShim.copyTextToClipboard = copyTextToClipboard;
 
 function syncMobileViewportHeight(): void {
   if (!mobileMediaQuery.matches) {
