@@ -39,8 +39,8 @@ cp -r scratch scratch-new-version-unmodified
 ## codex-cli version
 
 The web extraction does not automatically upgrade codex-cli. Keep the pinned
-`0.157.1` version in `nix/codex/default.nix` and `Dockerfile` unless a later
-Desktop change specifically requires a CLI update. If that decision is made,
+`0.159.2` version in `nix/codex/default.nix` and `Dockerfile` unless a later
+model or Desktop change requires a CLI update. If that decision is made,
 update both pins and their hashes independently of the web patch migration.
 
 ## porting over patches
