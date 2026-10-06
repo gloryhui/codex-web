@@ -1,3 +1,5 @@
+import { browserGuests } from "../browser-runtime";
+
 type StubFunction = (...args: unknown[]) => unknown;
 type StubListener = (...args: unknown[]) => void;
 type StubMessagePort = {
@@ -141,7 +143,13 @@ function createEmitterStub(label: string): {
       return api.removeListener(event, listener);
     },
     emit(event: string, ...args: unknown[]): boolean {
-      log(`${label}.emit`, [event, ...args]);
+      // Guest objects contain stream capabilities and CDP state. Log identity only.
+      log(
+        `${label}.emit`,
+        event === "did-attach-webview"
+          ? [event, { guestId: (args[1] as { id?: number })?.id }]
+          : [event, ...args],
+      );
       for (const listener of listeners.get(event) ?? []) {
         listener(...args);
       }
@@ -532,10 +540,13 @@ class BrowserWindow {
   static fromWebContents(
     webContents: { id?: unknown } | null | undefined,
   ): BrowserWindow | null {
-    log("BrowserWindow.fromWebContents", [webContents]);
+    log("BrowserWindow.fromWebContents", [{ id: webContents?.id }]);
     if (!webContents) {
       return null;
     }
+
+    const guest = browserGuests.get(Number(webContents.id));
+    if (guest && !guest.owner.isDestroyed()) return guest.owner;
 
     return (
       BrowserWindow.getAllWindows().find(
@@ -579,6 +590,9 @@ class BrowserWindow {
     log(`BrowserWindow#${this.id}.destroy`, []);
     if (this.destroyed) return;
     this.destroyed = true;
+    for (const guest of browserGuests.values()) {
+      if (guest.owner === this) guest.destroy();
+    }
     (this.webContents.emit as StubFunction)("destroyed");
     BrowserWindow.allWindows = BrowserWindow.allWindows.filter(
       (window) => window !== this,
@@ -619,6 +633,10 @@ class BrowserWindow {
 
   getBounds(): { height: number; width: number; x: number; y: number } {
     log(`BrowserWindow#${this.id}.getBounds`, []);
+    return { ...this.bounds };
+  }
+
+  getContentBounds(): { height: number; width: number; x: number; y: number } {
     return { ...this.bounds };
   }
 
@@ -1079,13 +1097,22 @@ const utilityProcess = {
 const webContents = {
   fromId(id: number): Record<string, unknown> | undefined {
     log("webContents.fromId", [id]);
-    return BrowserWindow.getAllWindows().find(
-      (window) => window.webContents.id === id,
-    )?.webContents;
+    return (
+      (browserGuests.get(id) as unknown as Record<string, unknown>) ??
+      BrowserWindow.getAllWindows().find(
+        (window) => window.webContents.id === id,
+      )?.webContents
+    );
   },
   getAllWebContents(): Record<string, unknown>[] {
     log("webContents.getAllWebContents", []);
-    return BrowserWindow.getAllWindows().map((window) => window.webContents);
+    return [
+      ...BrowserWindow.getAllWindows().map((window) => window.webContents),
+      ...(Array.from(browserGuests.values()) as unknown as Record<
+        string,
+        unknown
+      >[]),
+    ];
   },
   getFocusedWebContents(): Record<string, unknown> | null {
     log("webContents.getFocusedWebContents", []);

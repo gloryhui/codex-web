@@ -1,3 +1,5 @@
+import { installBrowserView } from "./browser-view";
+
 import {
   mapBrowserPathToInitialRoute,
   mapMemoryPathToBrowserPath,
@@ -832,3 +834,5 @@ export const webUtils = {
     return null;
   },
 };
+
+installBrowserView((channel, ...args) => invokeMain(channel, args));

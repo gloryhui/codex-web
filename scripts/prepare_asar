@@ -4,6 +4,7 @@ set -euxo pipefail
 unzip -o "$HOSTED_CODEX_APP_ZIP" -d scratch/
 asar extract "scratch/ChatGPT.app/Contents/Resources/app.asar" "scratch/asar"
 cp assets/* scratch/asar/webview/
+node scripts/prepare_browser_runtime.mjs "${CODEX_WEB_RUNTIME_SOURCE:-scratch/ChatGPT.app/Contents/Resources}"
 PWA_SOURCE_ICON="scratch/asar/webview/assets/app-f483cb0295ed.png"
 PWA_TARGET_ICON="scratch/asar/webview/assets/pwa-icon-512.png"
 PWA_ICON_SIZE=512
@@ -30,4 +31,5 @@ node scripts/patch_codex_web_renderer.mjs scratch/asar/webview/assets
 node scripts/patch_codex_web_transport.mjs scratch/asar/webview/assets
 node scripts/patch_codex_web_attachments.mjs scratch/asar/webview/assets
 node scripts/patch_codex_web_clipboard.mjs scratch/asar/webview/assets
+node scripts/patch_codex_web_browser_host.mjs scratch/asar/webview/assets
 rm -rf scratch/asar/node_modules/better-sqlite3

@@ -7,6 +7,7 @@ declare global {
 }
 
 import { execFileSync } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import fs from "node:fs/promises";
 import os from "node:os";
@@ -18,6 +19,8 @@ import fastifyMultipart from "@fastify/multipart";
 import fastifyStatic from "@fastify/static";
 import { installModuleAliasHook } from "./module";
 import { glob } from "glob";
+import { browserGuests, BrowserGuest, chromium } from "./browser-runtime";
+import { BrowserWindow } from "./electron/index";
 
 type ServerOptions = {
   host: string;
@@ -403,10 +406,32 @@ function ensureElectronLikeProcessContext(): void {
         }).trim()
       : os.release();
   processWithElectronFields.getSystemVersion ??= () => systemVersion;
-  processWithElectronFields.resourcesPath ??= path.resolve(
-    __dirname,
-    "../../scratch/asar",
-  );
+  const extractedResources = path.resolve(__dirname, "../../scratch/asar");
+  const hostResources =
+    process.env.CODEX_WEB_DESKTOP_RESOURCES ??
+    path.join(
+      extractedResources,
+      "host-resources",
+      `${process.platform}-${process.arch}`,
+    );
+  const manifestPath = path.join(hostResources, "cua_node", "manifest.json");
+  if (existsSync(manifestPath)) {
+    const runtime = JSON.parse(readFileSync(manifestPath, "utf8"));
+    if (runtime.platform !== process.platform || runtime.arch !== process.arch)
+      throw new Error(
+        "The browser runtime does not match this host's platform/architecture",
+      );
+    processWithElectronFields.resourcesPath ??= hostResources;
+  } else {
+    if (process.env.CODEX_WEB_DESKTOP_RESOURCES)
+      throw new Error(
+        "CODEX_WEB_DESKTOP_RESOURCES must contain the official cua_node runtime and plugins",
+      );
+    processWithElectronFields.resourcesPath ??= extractedResources;
+    console.warn(
+      "[browser] Official host runtime missing. Page display works with Chromium; automatic tools also require scripts/prepare_browser_runtime.mjs for this platform.",
+    );
+  }
   processWithElectronFields.type ??= "browser";
 }
 
@@ -414,6 +439,14 @@ async function startIpcBridgeServer(options: ServerOptions): Promise<void> {
   const bridgeState = getIpcMainBridgeState();
   const app = Fastify({ logger: false });
   const websocketServer = new WebSocketServer({ noServer: true });
+  const browserStreams = new WebSocketServer({
+    noServer: true,
+    maxPayload: 256 * 1024,
+  });
+  app.addHook("onClose", async () => {
+    browserStreams.close();
+    await chromium.close();
+  });
 
   await app.register(fastifyMultipart, {
     limits: {
@@ -481,6 +514,30 @@ async function startIpcBridgeServer(options: ServerOptions): Promise<void> {
     const requestUrl = request.url ?? "/";
     const host = request.headers.host ?? "localhost";
     const url = new URL(requestUrl, `http://${host}`);
+    if (url.pathname.startsWith("/__backend/browser/")) {
+      const token = url.pathname.slice("/__backend/browser/".length);
+      const guest = Array.from(browserGuests.values()).find(
+        (value) => value.token === token && !value.isDestroyed(),
+      );
+      const origin = request.headers.origin;
+      let sameOrigin = !origin;
+      try {
+        sameOrigin ||= new URL(origin!).host === host;
+      } catch {
+        /* Reject malformed Origin. */
+      }
+      if (!guest || !sameOrigin) {
+        socket.destroy();
+        return;
+      }
+      browserStreams.handleUpgrade(request, socket, head, (stream) => {
+        guest.connectStream(stream).catch((error) => {
+          console.error("[browser] stream failed", error);
+          stream.close(1011, "Browser stream failed");
+        });
+      });
+      return;
+    }
     if (url.pathname !== "/__backend/ipc") {
       socket.destroy();
       return;
@@ -552,6 +609,9 @@ async function startIpcBridgeServer(options: ServerOptions): Promise<void> {
       }
       messagePorts.clear();
       if (rendererWindow) {
+        for (const guest of browserGuests.values()) {
+          if (guest.owner?.id === rendererWindow.id) guest.destroy();
+        }
         rendererSockets.delete(rendererWindow.webContents.id);
         rendererWindow.destroy();
       }
@@ -646,7 +706,9 @@ async function startIpcBridgeServer(options: ServerOptions): Promise<void> {
       if (message.type === "ipc-renderer-invoke") {
         const { channel, requestId, args } = message;
         Promise.resolve(
-          bridgeState.handleRendererInvoke?.(channel, args, window.id) ??
+          (channel === "codex_web:browser"
+            ? handleBrowserRequest(window.id, args)
+            : bridgeState.handleRendererInvoke?.(channel, args, window.id)) ??
             Promise.reject(
               new Error(
                 `[ipc-bridge] no ipcMain.handle for channel ${channel}`,
@@ -714,10 +776,84 @@ async function startIpcBridgeServer(options: ServerOptions): Promise<void> {
   require(matches[0]!);
 }
 
+async function handleBrowserRequest(
+  windowId: number,
+  args: unknown[],
+): Promise<unknown> {
+  const [operation, value] = args as [string, Record<string, any>];
+  const owner = BrowserWindow.fromId(windowId);
+  if (!owner || owner.isDestroyed())
+    throw new Error("Browser owner is unavailable");
+  if (operation === "attach") {
+    const params = { ...value.attributes, instanceId: value.instanceId };
+    if (
+      !params["data-browser-sidebar-conversation-id"] ||
+      !params["data-browser-sidebar-browser-tab-id"]
+    )
+      throw new Error("Only managed browser tabs are supported");
+    let prevented = false;
+    const preferences: Record<string, any> = {};
+    (owner.webContents.emit as Function)(
+      "will-attach-webview",
+      {
+        preventDefault: () => {
+          prevented = true;
+        },
+        get defaultPrevented() {
+          return prevented;
+        },
+      },
+      preferences,
+      params,
+    );
+    if (prevented || !preferences.session)
+      throw new Error("Browser host is not registered yet");
+    const guest = new BrowserGuest(
+      owner,
+      value.instanceId,
+      preferences.session,
+    );
+    guest.on("browser-error", (error) =>
+      console.error("[browser] page operation failed", error),
+    );
+    try {
+      await guest.ready();
+      if (owner.isDestroyed() || guest.isDestroyed())
+        throw new Error("Browser owner was closed");
+      (owner.webContents.emit as Function)("did-attach-webview", {}, guest);
+      if (guest.isDestroyed())
+        throw new Error("Browser host rejected the page attachment");
+      return { id: guest.id, token: guest.token };
+    } catch (error) {
+      console.error("[browser] attachment failed", error);
+      guest.destroy();
+      throw error;
+    }
+  }
+  const guest = browserGuests.get(Number(value.id));
+  if (!guest || guest.owner.id !== windowId)
+    throw new Error("Browser tab is unavailable");
+  if (operation === "destroy") {
+    guest.destroy();
+    return null;
+  }
+  throw new Error("Unsupported browser operation");
+}
+
 async function main(args: string[]) {
   const options = parseServerArgs(args);
 
   await startIpcBridgeServer(options);
+}
+
+for (const signal of ["SIGINT", "SIGTERM"] as const) {
+  process.once(signal, () => {
+    const timeout = setTimeout(() => process.exit(0), 2000);
+    void chromium.close().finally(() => {
+      clearTimeout(timeout);
+      process.exit(0);
+    });
+  });
 }
 
 main(process.argv.slice(2));

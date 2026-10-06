@@ -30,6 +30,7 @@ Use the Codex Desktop interface in your browser, with Codex running on your own 
 | 图片与文件附件 | 支持浏览器文件选择、上传及图片/文件粘贴；修复二进制传输错误导致侧栏会话消失、发送不可用的问题。 |
 | 会话导航与操作 | 保留侧栏操作菜单，支持会话深链、浏览器历史同步与会话标题更新，分享入口可以将内容填入草稿。 |
 | Web 入口适配 | 提供图标、PWA manifest 和分享接收路由；可用体验取决于浏览器支持，不提供离线执行能力。 |
+| 内置浏览器 | 宿主 Chromium 页面显示、手动操作和官方 browser-use 自动点击、输入、截图、新建标签页；需匹配的平台运行时与浏览器依赖，见 [运行说明](docs/in-app-browser.md) 和 [验证记录](docs/upgrades/2026-10-06-in-app-browser.md)。 |
 | 升级修复可追踪 | 每项 Web 适配都有行为说明、代码索引和回归要求。确认官方已原生实现并验证通过后，再移除相应补丁。 |
 
 ### 当前验证基线
@@ -91,7 +92,7 @@ CODEX_CONFIG_DIR="$HOME/.codex" \
 
 Web 界面的访问者可以通过服务端 Codex 操作该用户有权访问的文件和命令。当前宿主没有内置多用户认证和权限隔离，应将访问控制放在私有网络、隧道或认证代理上，并妥善保管 `.codex` 中的凭据。
 
-默认模式下，重启 Web 服务可能中断正在执行的任务。仓库提供独立 app-server 的 [代理脚本](scripts/codex_remote_proxy)，用于需要分离进程生命周期的部署，但需单独配置和验证。Desktop 的原生系统能力并非全部已接入 Web；例如内置浏览器、终端、语音和远程控制不能仅凭界面出现就视为完整可用。
+默认模式下，重启 Web 服务可能中断正在执行的任务。仓库提供独立 app-server 的 [代理脚本](scripts/codex_remote_proxy)，用于需要分离进程生命周期的部署，但需单独配置和验证。Desktop 的原生系统能力并非全部已接入 Web；终端、语音和远程控制不能仅凭界面出现就视为完整可用。内置浏览器已接入页面和 CDP 操作，音频、注释及下载等仍有 [功能边界](docs/in-app-browser.md)。
 
 本仓库只保留两个分支：`glory` 用于开发、修复和发布，`main` 用于与源项目比对。每次提取新资源都按自定义索引核对既有修复；线上切换前检查运行任务并保留回滚目录。
 
@@ -137,6 +138,7 @@ This fork focuses on remote workflows, Chinese localization, mobile interaction,
 | Image and file attachments | Supports browser file selection, uploads, and pasted images/files. Fixes binary transport errors that could clear the sidebar and disable sending. |
 | Conversation navigation | Preserves sidebar actions, conversation deep links, browser history synchronization, and document titles. The share receiver can prefill a draft. |
 | Web entry points | Includes icons, a PWA manifest, and a share receiver route. Availability depends on browser support; tasks do not run offline. |
+| In-app browser | Host Chromium pages with manual interaction and official browser-use click, input, screenshots, and tab creation. Requires matching platform resources and a browser; see [setup and limits](docs/in-app-browser.md) and the [validation record](docs/upgrades/2026-10-06-in-app-browser.md). |
 | Traceable upgrade fixes | Every adaptation has a behavior description, code index, and regression requirement. Patches are removed only after upstream behavior is confirmed and tested. |
 
 ### Validated baseline
@@ -198,7 +200,7 @@ Replace the project path with a real directory. Compose publishes port `8214` by
 
 Anyone with access to the Web interface can use Codex to operate files and commands available to the server user. The host does not provide built-in multi-user authentication or permission isolation. Put access controls in a private network, tunnel, or authentication proxy, and protect credentials stored in `.codex`.
 
-In the default deployment, restarting the Web host may interrupt running tasks. A [proxy script](scripts/codex_remote_proxy) is available for a separately running app-server, but that deployment needs its own configuration and validation. Not every native Desktop capability is connected to the browser; the presence of browser, terminal, voice, or remote-control UI is not proof of complete support.
+In the default deployment, restarting the Web host may interrupt running tasks. A [proxy script](scripts/codex_remote_proxy) is available for a separately running app-server, but that deployment needs its own configuration and validation. Not every native Desktop capability is connected to the browser; the presence of terminal, voice, or remote-control UI is not proof of complete support. In-app browsing and CDP control are connected; audio, annotations, and downloads still have [limitations](docs/in-app-browser.md).
 
 This repository keeps two branches: `glory` for development, fixes, and releases; `main` for comparison with the source project. Every extraction checks existing adaptations against the customization index. Production switches require checking active tasks and retaining a rollback directory.
 
