@@ -70,7 +70,7 @@ sudo systemctl cat codex-web.service
 export PATH="/home/glory/.nvm/versions/node/v22.23.1/bin:$PATH"
 ```
 
-如果当前服务器的 Node 版本或安装位置不同，以服务器实际安装路径为准。不要为了登录随意升级服务使用的 Codex CLI；当前项目有独立的 CLI 版本固定配置。
+如果当前服务器的 Node 版本或安装位置不同，以服务器实际安装路径为准。登录操作本身不需要升级 CLI；跟进官方 Desktop、模型或功能时，应主动检查 CLI 兼容性并按需要升级，不能把历史已验证版本当作长期限制。升级后同步 Docker/Nix 的构建版本并检查线上服务实际使用的 CLI 路径。
 
 ## 常见故障检查
 
