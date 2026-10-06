@@ -827,6 +827,8 @@ export const contextBridge = {
 
 export const webUtils = {
   getPathForFile(_file: File): string | null {
-    return unimplemented("webUtils.getPathForFile");
+    // Browser File objects have no server filesystem path. Returning null lets
+    // Desktop's attachment pipeline copy their contents instead of aborting.
+    return null;
   },
 };

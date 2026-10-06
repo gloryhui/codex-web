@@ -3,6 +3,7 @@ import {
   QueryClientProvider,
   keepPreviousData,
   useQuery,
+  useQueryClient,
 } from "@tanstack/react-query";
 import React, { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
@@ -22,7 +23,21 @@ export type WorkspaceDirectoryEntries = {
 
 const TITLE_ID = "codex-web-workspace-root-dialog-title";
 const DESCRIPTION_ID = "codex-web-workspace-root-dialog-description";
-const HOST_EVENT_NAMES = ["click", "focusin", "mousedown", "pointerdown"] as const;
+// The picker has its own React root, outside the Desktop modal's focus and
+// scroll locks. Keep its events away from those document-level handlers without
+// preventing native input, trackpad scrolling, or touch scrolling.
+const HOST_EVENT_NAMES = [
+  "click",
+  "focusin",
+  "focusout",
+  "mousedown",
+  "pointerdown",
+  "keydown",
+  "keyup",
+  "wheel",
+  "touchstart",
+  "touchmove",
+] as const;
 
 function stopHostEventPropagation(event: Event): void {
   event.stopPropagation();
@@ -47,12 +62,15 @@ function WorkspaceRootDialog({
   const [pathSubmitError, setPathSubmitError] = useState<string | null>(null);
   const [isPathSubmitting, setIsPathSubmitting] = useState(false);
   const dialogRef = useRef<HTMLDivElement | null>(null);
+  const directoryListRef = useRef<HTMLDivElement | null>(null);
+  const queryClient = useQueryClient();
 
   const directoryQuery = useQuery({
     placeholderData: keepPreviousData,
     queryFn: () => listDirectory(directoryPath),
     queryKey: ["workspace-directory-entries", directoryPath],
     retry: false,
+    staleTime: 30_000,
   });
   const entries = useMemo(
     () =>
@@ -76,33 +94,44 @@ function WorkspaceRootDialog({
   }
 
   useEffect(() => {
-    dialogRef.current?.focus();
+    dialogRef.current?.querySelector("input")?.focus();
   }, []);
 
   useEffect(() => {
     if (directoryQuery.data?.directoryPath) {
       setPathInputValue(directoryQuery.data.directoryPath);
+      directoryListRef.current?.scrollTo({ top: 0 });
     }
   }, [directoryQuery.data?.directoryPath]);
 
-  useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent): void {
-      if (event.key === "Escape") {
+  function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>): void {
+    if (event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229) {
+      return;
+    }
+    if (event.key === "Escape") {
+      event.preventDefault();
+      onClose(null);
+    } else if (event.key === "Tab") {
+      const elements = Array.from(
+        event.currentTarget.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), input:not([disabled]), [tabindex="0"]',
+        ),
+      );
+      const first = elements[0];
+      const last = elements.at(-1);
+      if (event.shiftKey && document.activeElement === first) {
         event.preventDefault();
-        onClose(null);
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
       }
     }
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
+  }
 
   const selectedPath = userSelectedPath ?? directoryQuery.data?.directoryPath;
 
-  async function handleSubmit(
-    event: FormEvent<HTMLFormElement>,
-  ): Promise<void> {
-    event.preventDefault();
+  async function submitPath(addProject: boolean): Promise<void> {
     const requestedPath = pathInputValue.trim();
     if (!requestedPath || isBusy) {
       return;
@@ -112,12 +141,25 @@ function WorkspaceRootDialog({
     setPathSubmitError(null);
     try {
       const result = await listDirectory(requestedPath);
-      setIsPathSubmitting(false);
-      onClose(result.directoryPath);
+      if (addProject) {
+        onClose(result.directoryPath);
+      } else {
+        queryClient.setQueryData(
+          ["workspace-directory-entries", result.directoryPath],
+          result,
+        );
+        navigateTo(result.directoryPath);
+      }
     } catch (error) {
       setPathSubmitError(errorMessage(error));
+    } finally {
       setIsPathSubmitting(false);
     }
+  }
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>): void {
+    event.preventDefault();
+    void submitPath(true);
   }
 
   return (
@@ -161,6 +203,7 @@ function WorkspaceRootDialog({
           "w-[520px]",
         ].join(" ")}
         data-state="open"
+        onKeyDown={handleKeyDown}
         ref={dialogRef}
         role="dialog"
         style={{ pointerEvents: "auto", zIndex: 2147483647 }}
@@ -233,7 +276,7 @@ function WorkspaceRootDialog({
                 "gap-2",
               ].join(" ")}
             >
-              <label className={["flex", "flex-col", "gap-0.5"].join(" ")}>
+              <div className={["flex", "flex-col", "gap-0.5"].join(" ")}>
                 <span
                   className={["font-medium", "text-token-text-primary"].join(
                     " ",
@@ -334,13 +377,26 @@ function WorkspaceRootDialog({
                           setUserSelectedPath(null);
                           setPathSubmitError(null);
                         }}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") {
+                            event.preventDefault();
+                            if (
+                              !event.nativeEvent.isComposing &&
+                              event.nativeEvent.keyCode !== 229
+                            ) {
+                              void submitPath(false);
+                            }
+                          }
+                        }}
+                        placeholder="Enter a server folder path"
                         spellCheck={false}
-                        title={pathInputValue}
+                        title="Enter a server folder path and press Enter to browse"
                         value={pathInputValue}
                       />
                     </div>
 
                     <div
+                      aria-label="Server folders"
                       className={[
                         "min-h-0",
                         "flex-1",
@@ -351,6 +407,10 @@ function WorkspaceRootDialog({
                         "rounded-lg",
                         "border",
                       ].join(" ")}
+                      ref={directoryListRef}
+                      role="region"
+                      style={{ overscrollBehavior: "contain" }}
+                      tabIndex={0}
                     >
                       <div
                         className={["flex", "w-full", "flex-col", "py-1"].join(
@@ -376,6 +436,7 @@ function WorkspaceRootDialog({
                               "text-sm",
                               "text-token-text-error",
                             ].join(" ")}
+                            role="alert"
                           >
                             {queryError}
                           </div>
@@ -414,6 +475,7 @@ function WorkspaceRootDialog({
                                   .filter(Boolean)
                                   .join(" ")}
                                 data-path={entry.path}
+                                disabled={isBusy}
                                 key={entry.path}
                                 onClick={() => {
                                   setUserSelectedPath(entry.path);
@@ -438,7 +500,7 @@ function WorkspaceRootDialog({
                     </div>
                   </div>
                 </div>
-              </label>
+              </div>
             </div>
 
             <div
@@ -604,7 +666,37 @@ export async function openSelectWorkspaceRootDialog({
     };
   })();
 
-  const reactRoot = createRoot(ensureHost());
+  const host = ensureHost();
+  // FocusScope also handles focusout from the underlying create-project modal
+  // when focus first enters this separate root. Its target is outside our host.
+  function handleFocusEnteringPicker(event: FocusEvent): void {
+    if (
+      event.target instanceof Node &&
+      !host.contains(event.target) &&
+      event.relatedTarget instanceof Node &&
+      host.contains(event.relatedTarget)
+    ) {
+      event.stopPropagation();
+    }
+  }
+  // DismissableLayer listens for Escape in document capture, before our host's
+  // bubble handlers. Handle it in window capture so only the picker closes.
+  function handlePickerEscape(event: KeyboardEvent): void {
+    if (
+      event.key === "Escape" &&
+      !event.isComposing &&
+      event.keyCode !== 229 &&
+      event.target instanceof Node &&
+      host.contains(event.target)
+    ) {
+      event.preventDefault();
+      event.stopPropagation();
+      resolveFn(null);
+    }
+  }
+  document.addEventListener("focusout", handleFocusEnteringPicker, true);
+  window.addEventListener("keydown", handlePickerEscape, true);
+  const reactRoot = createRoot(host);
   reactRoot.render(
     <QueryClientProvider client={queryClient}>
       <WorkspaceRootDialog listDirectory={listDirectory} onClose={resolveFn} />
@@ -614,6 +706,8 @@ export async function openSelectWorkspaceRootDialog({
   const result = await promise;
 
   reactRoot.unmount();
+  document.removeEventListener("focusout", handleFocusEnteringPicker, true);
+  window.removeEventListener("keydown", handlePickerEscape, true);
 
   if (activeElement instanceof HTMLElement) {
     activeElement.focus();

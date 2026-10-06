@@ -16,10 +16,10 @@ flake-utils.lib.eachSystem systems (
   system:
   let
     pkgs = import nixpkgs { inherit system; };
-    appVersion = "26.924.20706";
+    appVersion = "26.930.51102";
     codexZip = pkgs.fetchurl {
       url = "https://persistent.oaistatic.com/codex-app-prod/ChatGPT-darwin-arm64-${appVersion}.zip";
-      hash = "sha256-E/3BS/jF0zFN8mt99bvfJsQnKiNCtRMr/3Ns4ON5bCI=";
+      hash = "sha256-cAHfKT/UeLKk4ti19Oo6rkOi4h0WiWAlay8xrE7kP28=";
     };
     codex = self.packages.${system}.codex;
   in

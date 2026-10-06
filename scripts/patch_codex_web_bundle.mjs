@@ -54,6 +54,18 @@ for (const entry of await readdir(buildDir, { withFileTypes: true })) {
     },
   );
 
+  // Recent Desktop builds configure the window manager directly instead of
+  // returning a setWindowContext callback from bootstrap.
+  if (fileRendererWindowFactoriesPatched === 0) {
+    patched = patched.replace(
+      /([A-Za-z_$][\w$]*)\.setWindowContext\(([A-Za-z_$][\w$]*)\),\s*(\{\s*desktopNotificationManager:)/g,
+      (_match, windowManager, context, objectStart) => {
+        fileRendererWindowFactoriesPatched += 1;
+        return `${windowManager}.setWindowContext(${context}),\n      globalThis.__codexElectronIpcBridge?.setRendererWindowFactory?.(() => ${windowManager}.createPrimaryWindow({show:false})),\n      ${objectStart}`;
+      },
+    );
+  }
+
   if (
     fileWslSettersPatched > 0 ||
     fileNativeIntlGettersPatched > 0 ||

@@ -25,7 +25,7 @@ const appInitialPath = appInitialFiles[0];
 const source = await readFile(appInitialPath, "utf8");
 const alreadyPatchedGate =
   /\bE\s*=\s*\((?:cr\(JI\)|Y\(sA\))\s*===\s*`work`\)\s*\|\|\s*window\.__ELECTRON_SHIM__\s*!=\s*null/;
-if (alreadyPatchedGate.test(source)) {
+if (alreadyPatchedGate.test(source) || source.includes("/* codex-web:sidebar-actions */")) {
   console.log("Codex Web sidebar actions are already enabled");
   process.exit(0);
 }
@@ -33,6 +33,7 @@ if (alreadyPatchedGate.test(source)) {
 const sidebarSurfaceGates = [
   /(\bE\s*=\s*)(cr\(JI\)\s*===\s*`work`)/g,
   /(\bE\s*=\s*)(Y\(sA\)\s*===\s*`work`)/g,
+  /(\b[A-Za-z_$][\w$]*\s*=\s*)(\$\([A-Za-z_$][\w$]*\s*\?\?\s*[A-Za-z_$][\w$]*\)\s*===\s*`work`)(?=,\s*\[[A-Za-z_$][\w$]*,\s*[A-Za-z_$][\w$]*\]\s*=\s*\(0,\s*[A-Za-z_$][\w$]*\.useState\)\(!1\))/g,
 ];
 const matchingGates = sidebarSurfaceGates.filter(
   (gate) => (source.match(gate) ?? []).length > 0,
@@ -55,7 +56,7 @@ if (
 const patched = source.replace(
   matchingGates[0],
   (_match, assignment, condition) =>
-    `${assignment}(${condition}) || window.__ELECTRON_SHIM__ != null`,
+    `${assignment}(${condition}) || window.__ELECTRON_SHIM__ != null /* codex-web:sidebar-actions */`,
 );
 await writeFile(appInitialPath, patched);
 console.log(

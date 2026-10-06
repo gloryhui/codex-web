@@ -298,15 +298,15 @@ const appBase = {
   },
   getLocale(): string {
     log("app.getLocale", []);
-    return "en-US";
+    return "zh-CN";
   },
   getSystemLocale(): string {
     log("app.getSystemLocale", []);
-    return "en-US";
+    return "zh-CN";
   },
   getPreferredSystemLanguages(): string[] {
     log("app.getPreferredSystemLanguages", []);
-    return ["en-US"];
+    return ["zh-CN"];
   },
   getPath(name: string): string {
     log("app.getPath", [name]);
