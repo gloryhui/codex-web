@@ -48,6 +48,8 @@ Use the Codex Desktop interface in your browser, with Codex running on your own 
 
 ### 从源码运行
 
+**推荐部署方式：在宿主机直接运行 Codex CLI + Codex Web。** 这样可以使用宿主机的文件、开发工具、SSH 配置和运行环境，更充分地发挥 Codex 的能力，适合日常开发与长期使用。
+
 宿主需要 Node.js 22、已安装且完成认证的 Codex CLI，以及 `git`、`curl`、`unzip`、`patch`、Python 3 和原生模块编译工具。构建会下载 Desktop 资源，需能访问相应下载地址。
 
 ```bash
@@ -70,6 +72,8 @@ CODEX_CLI_PATH="$(command -v codex)" \
 服务端入口默认只监听本机；仓库的 `npm run server` 脚本会监听 `0.0.0.0`。远程访问时请明确选择监听地址，并通过 SSH 隧道、私有网络或带认证的反向代理访问。反向代理需要支持 `/__backend/ipc` 的 WebSocket 连接。
 
 ### Docker / Compose
+
+**Docker 仅建议用于尝鲜和快速体验。** 容器可访问的文件、工具、凭据和网络环境受挂载及容器配置限制，宿主系统集成也需要额外接入。想充分使用 Codex 的本机工具链和工作区，推荐采用上面的宿主机部署方式。
 
 容器使用 `/workspace` 作为工作目录，将 Codex 配置和登录状态持久化到 `/home/codex/.codex`。先准备可写的配置目录，并用挂载该目录的 CLI 完成登录或配置认证。
 
@@ -151,6 +155,8 @@ These versions record reproducible validation results, not permanent version lim
 
 ### Run from source
 
+**Recommended deployment: run Codex CLI + Codex Web directly on the host machine.** This gives Codex access to the host's files, development tools, SSH configuration, and runtime environment, making it the preferred setup for daily development and long-term use.
+
 The host needs Node.js 22, an installed and authenticated Codex CLI, plus `git`, `curl`, `unzip`, `patch`, Python 3, and native-module build tools. Preparation downloads Desktop resources and requires access to their download endpoints.
 
 ```bash
@@ -173,6 +179,8 @@ Open [http://127.0.0.1:8214](http://127.0.0.1:8214). To use another CLI installa
 The server entry point binds to loopback by default; the repository's `npm run server` script binds to `0.0.0.0`. Choose the binding deliberately for remote access and use an SSH tunnel, private network, or authenticated reverse proxy. Reverse proxies must support WebSocket connections at `/__backend/ipc`.
 
 ### Docker / Compose
+
+**Docker is recommended only for a quick trial.** Access to files, tools, credentials, and networking depends on mounts and container configuration, while host-system integrations require additional setup. To make fuller use of Codex with your existing toolchain and workspaces, use the direct host deployment described above.
 
 The container uses `/workspace` as its working directory and persists Codex configuration and authentication under `/home/codex/.codex`. Prepare a writable configuration directory and authenticate or configure credentials with a CLI using that mounted directory.
 
