@@ -622,6 +622,13 @@ class BrowserWindow {
     return { ...this.bounds };
   }
 
+  getNormalBounds(): { height: number; width: number; x: number; y: number } {
+    // The Web host never maximizes a native window. Desktop's minimum-size
+    // synchronization still needs a concrete rectangle for every renderer.
+    log(`BrowserWindow#${this.id}.getNormalBounds`, []);
+    return { ...this.bounds };
+  }
+
   setBounds(nextBounds: {
     height?: number;
     width?: number;
