@@ -1,9 +1,9 @@
---- a/.vite/build/main-C7cfj__D.js
-+++ b/.vite/build/main-C7cfj__D.js
-@@ -155532,7 +155532,7 @@
-   return new s.Mt(r, t, n).getRemoteMain();
+--- a/.vite/build/main-39FdJ_vp.js
++++ b/.vite/build/main-39FdJ_vp.js
+@@ -159871,7 +159871,7 @@
+   return new l.Mt(r, t, n).getRemoteMain();
  }
- var Zqe = class {
+ var wXe = class {
 -    encodingLevel = `structuredClonable`;
 +    encodingLevel = `jsonCompatible`;
      constructor(e) {
@@ -23,43 +23,43 @@
    };
 --- a/.vite/build/worker.js
 +++ b/.vite/build/worker.js
-@@ -120093,6 +120093,7 @@
-   let r = jN(e.appVersion),
+@@ -120541,6 +120541,7 @@
+   let r = dP(e.appVersion),
      i = e.buildFlavor !== `prod`;
-   (ade({
+   (Ub({
 +    enabled: !1,
      dsn: e.dsn,
      transport: (e) => {
-       let t = Kl(e.bufferSize ?? 64);
---- a/webview/assets/app-initial-f9b16fbf8fc7.js
-+++ b/webview/assets/app-initial-f9b16fbf8fc7.js
-@@ -195300,6 +195300,7 @@
-     n = Exe(e.appVersion),
+       let t = xu(e.bufferSize ?? 64);
+--- a/webview/assets/app-initial-c468e3fd7f91.js
++++ b/webview/assets/app-initial-c468e3fd7f91.js
+@@ -144501,6 +144501,7 @@
+     n = rpe(e.appVersion),
      r = e.buildFlavor !== `prod`;
-   (HGr({
+   (E1n({
 +    enabled: !1,
-     beforeBreadcrumb: qpe,
-     beforeSend: aEe,
+     beforeBreadcrumb: CLe,
+     beforeSend: pNe,
      dsn: e.dsn,
-@@ -208433,7 +208434,7 @@
+@@ -221287,7 +221288,7 @@
          "--app-shell-root-banner-height": le,
-         "--app-shell-navigation-rail-width": dt,
-         "--app-shell-application-menu-height": ft,
--        "--spacing-token-safe-header-left": pt,
+         "--app-shell-navigation-rail-width": ut,
+         "--app-shell-application-menu-height": dt,
+-        "--spacing-token-safe-header-left": ft,
 +        "--spacing-token-safe-header-left": `0px`,
-         "--spacing-token-safe-header-right": mt,
+         "--spacing-token-safe-header-right": pt,
          "--app-shell-animated-left-panel-width": void 0,
          width: `calc(100vw / var(--codex-window-zoom))`,
-@@ -307037,10 +307038,17 @@
+@@ -324140,10 +324141,17 @@
      i;
    t[0] === r
      ? (i = t[1])
 -    : ((i = () =>
--        tie([{ path: `*`, Component: lDa, ErrorBoundary: uDa }], {
+-        RNe([{ path: `*`, Component: qHa, ErrorBoundary: JHa }], {
 -          initialEntries: r,
 -        })),
 +    : ((i = () => {
-+        let router = tie([{ path: `*`, Component: lDa, ErrorBoundary: uDa }], { initialEntries: r ?? [window.__ELECTRON_SHIM__?.initialRoute ?? `/`] });
++        let router = RNe([{ path: `*`, Component: qHa, ErrorBoundary: JHa }], { initialEntries: r ?? [window.__ELECTRON_SHIM__?.initialRoute ?? `/`] });
 +        let lastKey = router.state.location.key;
 +        if (window.__ELECTRON_SHIM__?.onMemoryNavigationChanged)
 +          router.subscribe((state) => {
@@ -71,68 +71,69 @@
 +      }),
        (t[0] = r),
        (t[1] = i));
-   let [a] = (0, fDa.useState)(i),
-@@ -495040,6 +495048,8 @@
- function OIs(e) {
+   let [a] = (0, XHa.useState)(i),
+@@ -506592,6 +506600,8 @@
+ function DQs(e) {
    let t = {
-     ...BIs,
+     ...zQs,
 +    overrideAdapter: window.__ELECTRON_SHIM__?.overrideAdapter,
 +    loggingEnabled: `disabled`,
      enableLiveValuesAutoRefresh: !0,
      ...(e === !0 ? {} : { disableStorage: !0, loggingEnabled: `disabled` }),
    };
-@@ -562415,13 +562425,11 @@
-             : UL({ schema: x, text: e })),
-     L != null && d != null && !p && (L = $ur(L, d, e ?? void 0)));
-   let R = d == null ? null : eFc(p ? d : null, (e) => WPc(y, e)),
+@@ -560580,14 +560590,11 @@
+             : XB({ schema: C, text: e })),
+     z != null && d != null && !p && (z = VHr(z, d, e ?? void 0)));
+   let B = d == null ? null : Ozc(p ? d : null, (e) => vzc(x, e)),
 +    inputModeDisabled = !1,
-+    getAttributes = () => ({ "aria-multiline": `true`, dir: `auto`, role: `textbox`, spellcheck: `true`, ...(inputModeDisabled ? {} : { inputmode: `none` }) }),
-+    setPointerInputMode = (e) => { inputModeDisabled !== e && ((inputModeDisabled = e), z.isDestroyed || z.setProps({ attributes: getAttributes })); },
-     z = new wde(null, {
++    getAttributes = () => ({ "aria-multiline": `true`, dir: `auto`, role: `textbox`, spellcheck: `true`, tabindex: `0`, ...(inputModeDisabled ? {} : { inputmode: `none` }) }),
++    setPointerInputMode = (e) => { inputModeDisabled !== e && ((inputModeDisabled = e), V.isDestroyed || V.setProps({ attributes: getAttributes })); },
+     V = new RAe(null, {
 -      attributes: {
 -        "aria-multiline": `true`,
 -        dir: `auto`,
 -        role: `textbox`,
 -        spellcheck: `true`,
+-        tabindex: `0`,
 -      },
 +      attributes: getAttributes,
-       transformPastedText: A.transformPastedText,
+       transformPastedText: M.transformPastedText,
        transformPastedHTML(e) {
-         if ((A.transformPastedHTML(e), e.length > 1e5)) return ` `;
-@@ -562592,7 +562600,9 @@
+         if ((M.transformPastedHTML(e), e.length > 1e5)) return ` `;
+@@ -560763,7 +560770,9 @@
        },
        handleDOMEvents: {
-         keydown: (e, t) => A.handleKeyEvent(t),
--        mousedown: (e, t) => A.handleMouseDown(t),
-+        mousedown: (e, t) => (setPointerInputMode(!0), A.handleMouseDown(t)),
+         keydown: (e, t) => M.handleKeyEvent(t),
+-        mousedown: (e, t) => M.handleMouseDown(t),
++        mousedown: (e, t) => (setPointerInputMode(!0), M.handleMouseDown(t)),
 +        touchstart: () => (setPointerInputMode(!0), !1),
 +        blur: () => (setPointerInputMode(!1), !1),
          keyup(e, t) {
-           A.handleKeyEvent(t);
+           M.handleKeyEvent(t);
            let { $from: n, empty: r } = e.state.selection;
-@@ -599884,7 +599894,7 @@
-     c = Tp(),
-     l = rf(),
+@@ -615715,7 +615724,7 @@
+     c = Pr(),
+     l = Cc(),
      u = n != null,
 -    d = o?.prefillPrompt,
 +    d = o?.prefillPrompt ?? new URLSearchParams(window.__ELECTRON_SHIM__?.currentSearch ?? window.location.search).get(`prompt`),
      f = o?.prefillPromptFormat,
      p = o?.prefillPromptOnlyIfEmpty,
      m = o?.prefillLibraryFolders,
---- a/webview/assets/app-primary-c0280d43ce72.js
-+++ b/webview/assets/app-primary-c0280d43ce72.js
-@@ -136444,9 +136444,9 @@
+--- a/webview/assets/app-primary-5433e23a397e.js
++++ b/webview/assets/app-primary-5433e23a397e.js
+@@ -140844,9 +140844,9 @@
      );
    }
-   let K =
+   let ie =
 -      g?.prefillPromptOnlyIfEmpty && g.prefillPrompt != null
 +      (g?.prefillPromptOnlyIfEmpty && g.prefillPrompt != null
          ? void 0
 -        : (g?.prefillPrompt ?? void 0),
 +        : (g?.prefillPrompt ?? void 0)) ?? new URLSearchParams(window.__ELECTRON_SHIM__?.currentSearch ?? window.location.search).get(`prompt`),
-     ne;
-   t[27] === m ? (ne = t[28]) : ((ne = Pm(m)), (t[27] = m), (t[28] = ne));
-   let re = ne,
+     ae;
+   t[41] === m ? (ae = t[42]) : ((ae = Wg(m)), (t[41] = m), (t[42] = ae));
+   let oe = ae,
 --- a/webview/index.html
 +++ b/webview/index.html
 @@ -3,13 +3,13 @@
@@ -141,7 +142,7 @@
      <!-- PROD_BASE_TAG_HERE -->
 -    <meta
 -      http-equiv="Content-Security-Policy"
--      content="default-src &#39;none&#39;; img-src &#39;self&#39; app: blob: data: https:; child-src &#39;self&#39; blob: codex-sandbox://*.web-sandbox.oaiusercontent.com codex-sandbox://web-sandbox.oaiusercontent.com https://*.web-sandbox.oaiusercontent.com https://web-sandbox.oaiusercontent.com; frame-src &#39;self&#39; blob: codex-sandbox://*.web-sandbox.oaiusercontent.com codex-sandbox://web-sandbox.oaiusercontent.com https://*.web-sandbox.oaiusercontent.com https://cdn.plaid.com https://cdn.platform.openai.com https://mfe.prod.us-exp-api.experiancs.com https://mfe.uat.us-exp-api.experiancs.com https://web-sandbox.oaiusercontent.com https://www.youtube.com; worker-src &#39;self&#39; blob:; script-src &#39;self&#39; &#39;sha256-Z2/iFzh9VMlVkEOar1f/oSHWwQk3ve1qk/C2WdsC4Xk=&#39; &#39;wasm-unsafe-eval&#39; https://cdn.plaid.com/link/v2/stable/link-initialize.js https://persistent.oaistatic.com/voice/silero-vad-v6/ort-wasm-simd-threaded.30dd851d9c00622940500f71ddd2ff8820c5cb65270816080175b958705385a8.module.js; style-src &#39;self&#39; &#39;unsafe-inline&#39;; font-src &#39;self&#39; data:; media-src &#39;self&#39; app: blob: data: https:; connect-src &#39;self&#39; blob: https://ab.chatgpt.com https://api.mapbox.com https://cdn.openai.com https://events.mapbox.com https://learn.chatgpt.com https://persistent.oaistatic.com https://production.plaid.com https://sandbox.plaid.com wss://*.api.openai.com/ws wss://*.api.openai.org/ws wss://chatgpt-staging.com/backend-api/pages/realtime-broker/ wss://chatgpt.com wss://ws.chatgpt-staging.com wss://ws.chatgpt.com;"
+-      content="default-src &#39;none&#39;; img-src &#39;self&#39; app: blob: data: https:; child-src &#39;self&#39; blob: codex-sandbox://*.web-sandbox.oaiusercontent.com codex-sandbox://web-sandbox.oaiusercontent.com https://*.web-sandbox.oaiusercontent.com https://web-sandbox.oaiusercontent.com; frame-src &#39;self&#39; blob: codex-sandbox://*.web-sandbox.oaiusercontent.com codex-sandbox://web-sandbox.oaiusercontent.com https://*.web-sandbox.oaiusercontent.com https://cdn.plaid.com https://cdn.platform.openai.com https://codepen.io https://docs.google.com/document/d/ https://docs.google.com/presentation/d/ https://docs.google.com/spreadsheets/d/ https://drive.google.com/file/d/ https://embed.apple-mapkit.com/v1/embed https://mfe.prod.us-exp-api.experiancs.com https://mfe.uat.us-exp-api.experiancs.com https://player.vimeo.com/video/ https://web-sandbox.oaiusercontent.com https://www.google.com/maps https://www.google.com/maps/embed https://www.youtube.com; worker-src &#39;self&#39; blob:; script-src &#39;self&#39; &#39;sha256-Z2/iFzh9VMlVkEOar1f/oSHWwQk3ve1qk/C2WdsC4Xk=&#39; &#39;wasm-unsafe-eval&#39; https://cdn.plaid.com/link/v2/stable/link-initialize.js https://persistent.oaistatic.com/voice/silero-vad-v6/ort-wasm-simd-threaded.30dd851d9c00622940500f71ddd2ff8820c5cb65270816080175b958705385a8.module.js; style-src &#39;self&#39; &#39;unsafe-inline&#39;; font-src &#39;self&#39; data:; media-src &#39;self&#39; app: blob: data: https:; connect-src &#39;self&#39; blob: https://ab.chatgpt.com https://api.mapbox.com https://cdn.openai.com https://events.mapbox.com https://learn.chatgpt.com https://persistent.oaistatic.com https://production.plaid.com https://sandbox.plaid.com wss://*.api.openai.com/ws wss://*.api.openai.org/ws wss://chatgpt-staging.com/backend-api/pages/realtime-broker/ wss://chatgpt.com wss://ws.chatgpt-staging.com wss://ws.chatgpt.com;"
 -    />
 +    <base href="/" />
 +    <script type="module" src="./assets/preload.js"></script>
@@ -155,7 +156,7 @@
        @layer theme, base, components, utilities;
 @@ -160,6 +160,30 @@
        crossorigin
-       href="./assets/app-shared-6fb15e58cd7f.css"
+       href="./assets/app-shared-9a94b907ed47.css"
      />
 +    <style>
 +      .main-surface {

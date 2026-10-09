@@ -33,7 +33,7 @@ if (alreadyPatchedGate.test(source) || source.includes("/* codex-web:sidebar-act
 const sidebarSurfaceGates = [
   /(\bE\s*=\s*)(cr\(JI\)\s*===\s*`work`)/g,
   /(\bE\s*=\s*)(Y\(sA\)\s*===\s*`work`)/g,
-  /(\b[A-Za-z_$][\w$]*\s*=\s*)(\$\([A-Za-z_$][\w$]*\s*\?\?\s*[A-Za-z_$][\w$]*\)\s*===\s*`work`)(?=,\s*\[[A-Za-z_$][\w$]*,\s*[A-Za-z_$][\w$]*\]\s*=\s*\(0,\s*[A-Za-z_$][\w$]*\.useState\)\(!1\))/g,
+  /(\b[A-Za-z_$][\w$]*\s*=\s*)([A-Za-z_$][\w$]*\([A-Za-z_$][\w$]*\s*\?\?\s*[A-Za-z_$][\w$]*\)\s*===\s*`work`)(?=,\s*\[[A-Za-z_$][\w$]*,\s*[A-Za-z_$][\w$]*\]\s*=\s*\(0,\s*[A-Za-z_$][\w$]*\.useState\)\(!1\))/g,
 ];
 const matchingGates = sidebarSurfaceGates.filter(
   (gate) => (source.match(gate) ?? []).length > 0,

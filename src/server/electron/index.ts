@@ -1,3 +1,4 @@
+import os from "node:os";
 import { browserGuests } from "../browser-runtime";
 
 type StubFunction = (...args: unknown[]) => unknown;
@@ -816,6 +817,12 @@ const crashReporter = {
 };
 
 const net = {
+  isOnline(): boolean {
+    // Electron reports interface availability, not whether OpenAI is reachable.
+    return Object.values(os.networkInterfaces()).some((addresses) =>
+      addresses?.some((address) => !address.internal),
+    );
+  },
   async fetch(input: string | URL, init?: RequestInit): Promise<Response> {
     // log("net.fetch", [input, init]);
     if (typeof globalThis.fetch === "function") {
