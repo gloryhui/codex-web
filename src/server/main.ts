@@ -504,6 +504,10 @@ async function startIpcBridgeServer(options: ServerOptions): Promise<void> {
   await app.register(fastifyStatic, {
     root: path.resolve(__dirname, "../../scratch/asar/webview"),
     prefix: "/",
+    preCompressed: true,
+    setHeaders(response) {
+      response.setHeader("Vary", "Accept-Encoding");
+    },
   });
 
   app.get("/", async (_request, reply) => {
