@@ -18,7 +18,7 @@ RUN npm run prepare
 
 FROM node:22-bookworm-slim AS runtime
 
-ARG CODEX_CLI_VERSION=0.162.0
+ARG CODEX_CLI_VERSION=0.163.0-alpha.11.1
 
 ENV HOME=/home/codex \
     CODEX_HOME=/home/codex/.codex \

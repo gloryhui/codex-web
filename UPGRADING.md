@@ -47,6 +47,12 @@ An earlier tested version is not a permanent pin or an upper version limit.
 The versions in `nix/codex/default.nix` and `Dockerfile` record a reproducible,
 tested build; update both and the relevant hashes when upgrading the CLI.
 
+For an exact Desktop/CLI pairing, inspect the downloaded Desktop
+`codex-cli/codex-package.json` and run its `bin/codex --version`; compare that
+version with the published npm package rather than assuming `latest` matches.
+Preserve the full CLI vendor layout in Nix, including `codex-package.json`,
+`codex-path` and `codex-resources`, when updating versions.
+
 ## porting over patches
 
 now we have a few folders

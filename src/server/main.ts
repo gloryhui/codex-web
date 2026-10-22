@@ -384,10 +384,21 @@ function ensureElectronLikeProcessContext(): void {
 
   const versions = process.versions as NodeJS.ProcessVersions & {
     electron?: string;
+    chrome?: string;
   };
   if (!versions.electron) {
     Object.defineProperty(versions, "electron", {
       value: "41.2.0",
+      configurable: true,
+      enumerable: true,
+      writable: false,
+    });
+  }
+  if (!versions.chrome) {
+    // Desktop builds HTTP client hints from the embedded Chromium version.
+    // Match the Electron 41.2.0 compatibility context above when hosted in Node.
+    Object.defineProperty(versions, "chrome", {
+      value: "146.0.7680.179",
       configurable: true,
       enumerable: true,
       writable: false,

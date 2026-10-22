@@ -1004,6 +1004,8 @@ function createSessionStub(label: string): {
   once: (event: string, listener: StubListener) => unknown;
   protocol: typeof protocol;
   removeListener: (event: string, listener: StubListener) => unknown;
+  setOpenURLHandler: (...args: unknown[]) => void;
+  setWebContentsActivationHandler: (...args: unknown[]) => void;
   setPermissionCheckHandler: (...args: unknown[]) => void;
   setPermissionPromptHandler: (...args: unknown[]) => void;
   setPermissionRequestHandler: (...args: unknown[]) => void;
@@ -1055,6 +1057,14 @@ function createSessionStub(label: string): {
     once: emitter.once,
     protocol,
     removeListener: emitter.removeListener,
+    // These hooks receive native Session/OS events. Web guests route popups
+    // through BrowserGuest.setWindowOpenHandler and activate tabs in the renderer.
+    setOpenURLHandler(...args: unknown[]): void {
+      log(`${label}.setOpenURLHandler`, args);
+    },
+    setWebContentsActivationHandler(...args: unknown[]): void {
+      log(`${label}.setWebContentsActivationHandler`, args);
+    },
     setPermissionCheckHandler(...args: unknown[]): void {
       log(`${label}.setPermissionCheckHandler`, args);
     },
