@@ -11,6 +11,7 @@ export async function precompressWebAssets(root) {
   async function walk(dir) {
     for (const entry of await readdir(dir, { withFileTypes: true })) {
       const file = path.join(dir, entry.name);
+      if (entry.isDirectory() && file === path.join(root, "generations")) continue;
       if (entry.isDirectory()) await walk(file);
       else if (entry.isFile() && /\.(js|css|html|json|svg)$/.test(entry.name)) files.push(file);
     }

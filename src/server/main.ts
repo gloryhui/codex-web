@@ -502,6 +502,18 @@ async function startIpcBridgeServer(options: ServerOptions): Promise<void> {
   });
 
   await app.register(fastifyStatic, {
+    root: path.resolve(__dirname, "../../scratch/asar/webview/generations"),
+    prefix: "/web-assets/",
+    decorateReply: false,
+    preCompressed: true,
+    maxAge: "1y",
+    immutable: true,
+    setHeaders(response) {
+      response.setHeader("Vary", "Accept-Encoding");
+    },
+  });
+
+  await app.register(fastifyStatic, {
     root: path.resolve(__dirname, "../../scratch/asar/webview"),
     prefix: "/",
     preCompressed: true,
@@ -515,7 +527,7 @@ async function startIpcBridgeServer(options: ServerOptions): Promise<void> {
   });
 
   app.setNotFoundHandler((request, reply) => {
-    if (request.url.startsWith("/@fs/")) {
+    if (request.url.startsWith("/@fs/") || request.url.startsWith("/web-assets/")) {
       return reply.code(404).send({ error: "Not Found" });
     }
 

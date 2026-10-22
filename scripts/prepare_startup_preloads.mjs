@@ -40,7 +40,8 @@ export async function prepareStartupPreloads(root) {
   if (!route.length) throw Error("Missing local conversation route");
   const dependencies = await dependencyClosure([...core, ...route], (file) => readFile(path.join(assets, file), "utf8"));
   const index = path.join(root, "index.html");
-  let html = (await readFile(index, "utf8")).replace(/\n\s*<!-- codex-web:startup-preloads -->[\s\S]*?<!-- \/codex-web:startup-preloads -->\n?/g, "\n");
+  let html = (await readFile(index, "utf8")).replace(/(?:\.\/|\/)web-assets\/[a-f0-9]{24}\//g, "./assets/")
+    .replace(/\n\s*<!-- codex-web:startup-preloads -->[\s\S]*?<!-- \/codex-web:startup-preloads -->\n?/g, "\n");
   const existing = new Set([...html.matchAll(/(?:href|src)="\.\/assets\/([^"]+)"/g)].map((match) => match[1]));
   const links = dependencies.filter((file) => !existing.has(file)).map((file) =>
     `    <link rel="modulepreload" crossorigin fetchpriority="${core.includes(file) ? "high" : "low"}" href="./assets/${file}" />`);
