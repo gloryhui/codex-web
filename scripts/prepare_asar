@@ -32,6 +32,7 @@ node scripts/patch_codex_web_renderer.mjs scratch/asar/webview/assets
 node scripts/patch_codex_web_accounts.mjs scratch/asar/webview/assets
 node scripts/patch_codex_web_startup.mjs scratch/asar/webview/assets
 node scripts/patch_codex_web_statsig.mjs scratch/asar/webview/assets
+node scripts/patch_codex_web_model_prewarm.mjs scratch/asar/webview/assets
 node scripts/patch_codex_web_transport.mjs scratch/asar/webview/assets
 node scripts/patch_codex_web_attachments.mjs scratch/asar/webview/assets
 node scripts/patch_codex_web_clipboard.mjs scratch/asar/webview/assets
