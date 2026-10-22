@@ -116,6 +116,12 @@ type StatsigDynamicConfigEvaluation = {
   [key: string]: unknown;
 };
 
+type StatsigLayerEvaluation = {
+  name: string;
+  __value: Record<string, unknown>;
+  [key: string]: unknown;
+};
+
 type ElectronShimState = {
   currentSearch?: string;
   initialRoute?: string;
@@ -135,6 +141,10 @@ type ElectronShimState = {
       evaluation: StatsigDynamicConfigEvaluation,
       ...args: unknown[]
     ) => StatsigDynamicConfigEvaluation | null;
+    getLayerOverride?: (
+      evaluation: StatsigLayerEvaluation,
+      ...args: unknown[]
+    ) => StatsigLayerEvaluation | null;
   };
 };
 
@@ -543,6 +553,22 @@ Object.assign(globalThis, {
 });
 
 electronShim.overrideAdapter = {
+  getLayerOverride(evaluation) {
+    if (evaluation.name !== "72216192") {
+      return null;
+    }
+
+    // Newer Desktop reads i18n from a Layer. Statsig rebuilds its getter from
+    // __value when merging overrides, so overriding get/value alone is ignored.
+    return {
+      ...evaluation,
+      __value: {
+        ...evaluation.__value,
+        enable_i18n: true,
+      },
+    };
+  },
+
   getDynamicConfigOverride(evaluation) {
     if (evaluation.name !== "72216192") {
       return null;
