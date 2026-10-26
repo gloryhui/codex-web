@@ -68,12 +68,12 @@ export async function readRendererAccounts(request, signal, normalize = toRender
 
 export function patchAccountQuery(source) {
   if (source.includes("/* codex-web:account-catalog */")) return source;
-  const query = /let (\w+) = await (\w+)\.safeGet\(`\/accounts\/check\/\{version\}`, \{\s*additionalHeaders:\s*(\w+) == null \? void 0 : \{ "ChatGPT-Account-ID": \3 \},\s*parameters: \{ path: \{ version: (\w+) \} \},\s*signal: (\w+),\s*\}\);/g;
+  const query = /(\w+) = await (\w+)\.safeGet\(`\/accounts\/check\/\{version\}`, \{\s*additionalHeaders:\s*(\w+) == null \? void 0 : \{ "ChatGPT-Account-ID": \3 \},\s*parameters: \{ path: \{ version: (\w+) \} \},\s*signal: (\w+),\s*\}\);/g;
   if ([...source.matchAll(query)].length !== 1) {
     throw Error("Expected one renderer legacy account catalog query");
   }
   return source.replace(query, (original, result, request, account, version, signal) =>
-    `/* codex-web:account-catalog */\nlet ${result} = window.__ELECTRON_SHIM__ != null\n` +
+    `/* codex-web:account-catalog */\n${result} = window.__ELECTRON_SHIM__ != null\n` +
     `? await (${readRendererAccounts.toString()})(${request}, ${signal}, ${toRendererAccounts.toString()})\n` +
     `: ${original.slice(original.indexOf("await"), -1)};`);
 }

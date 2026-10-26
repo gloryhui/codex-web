@@ -25,25 +25,25 @@ if (copyErrorPosition < 0) {
 }
 
 const helperPosition = source.indexOf("async function ", copyErrorPosition);
-const clipboardWritePosition = source.indexOf("appServices:t", helperPosition);
+const clipboardWriteMatch = /appServices\s*:\s*t/.exec(source.slice(helperPosition, helperPosition + 2400));
 const browserBranch =
   "try{if(o&&window.__ELECTRON_SHIM__?.copyTextToClipboard)c=window.__ELECTRON_SHIM__.copyTextToClipboard(e,i);else if(o){";
-const alreadyPatchedPosition = source.indexOf(browserBranch, helperPosition);
+const alreadyPatchedPosition = source.indexOf("window.__ELECTRON_SHIM__?.copyTextToClipboard", helperPosition);
 if (
   alreadyPatchedPosition >= 0 &&
-  alreadyPatchedPosition - helperPosition < 650
+  alreadyPatchedPosition - helperPosition < 1800
 ) {
   console.log("Codex Web clipboard copy is already enabled");
   process.exit(0);
 }
-const branchPosition = source.indexOf("try{if(o){", helperPosition);
+const branch = /try\s*\{\s*if\s*\(o\)\s*\{/.exec(source.slice(helperPosition, helperPosition + 1800));
+const branchPosition = branch ? helperPosition + branch.index : -1;
 if (
   helperPosition < 0 ||
-  helperPosition - copyErrorPosition > 900 ||
-  clipboardWritePosition < 0 ||
-  clipboardWritePosition - helperPosition > 1100 ||
+  helperPosition - copyErrorPosition > 1100 ||
+  !clipboardWriteMatch ||
   branchPosition < 0 ||
-  branchPosition - helperPosition > 650
+  branchPosition - helperPosition > 1800
 ) {
   throw new Error(`Clipboard copy helper changed in ${filePath}`);
 }
@@ -51,6 +51,6 @@ if (
 const patched =
   source.slice(0, branchPosition) +
   browserBranch +
-  source.slice(branchPosition + "try{if(o){".length);
+  source.slice(branchPosition + branch[0].length);
 await writeFile(filePath, patched);
 console.log(`Enabled browser clipboard copy in ${path.basename(filePath)}`);

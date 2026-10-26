@@ -8,21 +8,21 @@ if (!assetsDir) {
   throw new Error("Usage: patch_codex_web_renderer.mjs <webview-assets-dir>");
 }
 
-const appInitialFiles = (await readdir(assetsDir, { withFileTypes: true }))
+const appPrimaryFiles = (await readdir(assetsDir, { withFileTypes: true }))
   .filter(
     (entry) =>
-      entry.isFile() && /^app-initial-.*\.js$/.test(entry.name),
+      entry.isFile() && /^app-primary-.*\.js$/.test(entry.name),
   )
   .map((entry) => path.join(assetsDir, entry.name));
 
-if (appInitialFiles.length !== 1) {
+if (appPrimaryFiles.length !== 1) {
   throw new Error(
-    `Expected one app-initial bundle in ${assetsDir}, found ${appInitialFiles.length}`,
+    `Expected one app-primary bundle in ${assetsDir}, found ${appPrimaryFiles.length}`,
   );
 }
 
-const appInitialPath = appInitialFiles[0];
-const source = await readFile(appInitialPath, "utf8");
+const appPrimaryPath = appPrimaryFiles[0];
+const source = await readFile(appPrimaryPath, "utf8");
 const alreadyPatchedGate =
   /\bE\s*=\s*\((?:cr\(JI\)|Y\(sA\))\s*===\s*`work`\)\s*\|\|\s*window\.__ELECTRON_SHIM__\s*!=\s*null/;
 if (alreadyPatchedGate.test(source) || source.includes("/* codex-web:sidebar-actions */")) {
@@ -41,7 +41,7 @@ const matchingGates = sidebarSurfaceGates.filter(
 
 if (matchingGates.length === 0) {
   throw new Error(
-    `Could not find the sidebar row action gate in ${appInitialPath}`,
+    `Could not find the sidebar row action gate in ${appPrimaryPath}`,
   );
 }
 if (
@@ -49,7 +49,7 @@ if (
   (source.match(matchingGates[0]) ?? []).length !== 1
 ) {
   throw new Error(
-    `Expected one sidebar row action gate in ${appInitialPath}`,
+    `Expected one sidebar row action gate in ${appPrimaryPath}`,
   );
 }
 
@@ -58,7 +58,7 @@ const patched = source.replace(
   (_match, assignment, condition) =>
     `${assignment}(${condition}) || window.__ELECTRON_SHIM__ != null /* codex-web:sidebar-actions */`,
 );
-await writeFile(appInitialPath, patched);
+await writeFile(appPrimaryPath, patched);
 console.log(
-  `Enabled sidebar action menus for the browser shim in ${path.basename(appInitialPath)}`,
+  `Enabled sidebar action menus for the browser shim in ${path.basename(appPrimaryPath)}`,
 );

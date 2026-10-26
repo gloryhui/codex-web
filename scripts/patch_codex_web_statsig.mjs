@@ -1,7 +1,6 @@
 #!/usr/bin/env node
-import { readdir, readFile, writeFile } from "node:fs/promises";
-import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { patchExtractedStartup } from "./extracted_startup.mjs";
 
 export function patchStatsig(source) {
   if (source.includes("/* codex-web:disabled-statsig-flush */")) return source;
@@ -15,9 +14,9 @@ export function patchStatsig(source) {
         if (window.__ELECTRON_SHIM__ != null && this._loggingEnabled === "disabled") return;
         let t = (0, u._isServerEnv)();`,
     "Statsig event logger startup");
-  // The authenticated bootstrap was already attempted before this fallback.
-  // Avoid an immediate duplicate initialize request; periodic live refresh and
-  // identity changes keep their upstream behavior.
+  // The browser provider uses cached values and refreshes authenticated data in
+  // the background. Avoid an immediate duplicate SDK initialize request;
+  // periodic live refresh and identity changes keep their upstream behavior.
   once(/Promise\.resolve\(\)\.then\(\(\) => client\.initializeSync\(\)\)/g,
     "Promise.resolve().then(() => client.initializeSync({ disableBackgroundCacheRefresh: true }))",
     "browser fallback cache initialization");
@@ -27,9 +26,6 @@ export function patchStatsig(source) {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const dir = process.argv[2];
   if (!dir) throw Error("Usage: patch_codex_web_statsig.mjs <webview-assets-dir>");
-  const files = (await readdir(dir)).filter((name) => /^app-initial-.*\.js$/.test(name));
-  if (files.length !== 1) throw Error("Expected one app-initial bundle");
-  const file = path.join(dir, files[0]);
-  await writeFile(file, patchStatsig(await readFile(file, "utf8")));
-  console.log(`Preserved disabled Statsig logging in ${files[0]}`);
+  await patchExtractedStartup(dir, patchStatsig);
+  console.log("Preserved disabled Statsig logging across extracted modules");
 }

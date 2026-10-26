@@ -1,8 +1,9 @@
+import { extractedBundle, extractedStartup } from "./extracted-bundles.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { patchStatsig } from "../scripts/patch_codex_web_statsig.mjs";
 
-const source = await readFile(new URL("../scratch/asar/webview/assets/app-initial-c95ddb62696e.js", import.meta.url), "utf8");
+const source = await extractedStartup();
 const patched = patchStatsig(source);
 assert.equal(patchStatsig(patched), patched);
 assert.throws(() => patchStatsig("unrecognized upstream"));

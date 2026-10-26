@@ -1,3 +1,4 @@
+import { extractedBundle, extractedStartup } from "./extracted-bundles.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { patchLatency, prefetchTurnHeads, refreshBootstrap } from "../scripts/patch_codex_web_latency.mjs";
@@ -14,13 +15,13 @@ assert.deepEqual(heads, [0, 1, 2, 3, 4]);
 assert.equal(peak, 3);
 assert.equal(await prefetchTurnHeads([1], () => { throw Error("No reads with zero budget"); }, 100, 0), null);
 
-const source = await readFile(new URL("../scratch/asar/webview/assets/app-initial-c95ddb62696e.js", import.meta.url), "utf8");
+const source = await extractedStartup();
 const patched = patchLatency(source);
 assert.equal(patchLatency(patched), patched);
 assert.throws(() => patchLatency("unknown upstream"));
-const gx = patched.slice(patched.indexOf("async function gx("), patched.indexOf("async function m6t("));
-const m6t = patched.slice(patched.indexOf("async function m6t("), patched.indexOf("async function h6t("));
-const make = (web) => new Function("window", "Ol", "Xb", "h6t", "g6t", `${gx}\n${m6t}\nreturn m6t`)(
+const gx = patched.slice(patched.indexOf("async function lT("), patched.indexOf("async function Y6t("));
+const m6t = patched.slice(patched.indexOf("async function Y6t("), patched.indexOf("async function X6t("));
+const make = (web) => new Function("window", "cs", "Qw", "X6t", "Z6t", `${gx}\n${m6t}\nreturn Y6t`)(
   web ? { __ELECTRON_SHIM__: {} } : {}, (id) => id, () => [], () => { throw Error("Unexpected progressive path"); }, async () => ({ openingUserMessageId: null }));
 async function readHistory(web, sizes, turnLimit = 1000, maxTurns = 5, fail = false) {
   let running = 0, maxRunning = 0;
@@ -44,7 +45,7 @@ async function readHistory(web, sizes, turnLimit = 1000, maxTurns = 5, fail = fa
       };
     },
   };
-  const result = await make(web)(client, turnLimit, null, "thread", null, null, maxTurns, {}, "desc");
+  const result = await make(web)(() => null, client.sendRequest.bind(client), turnLimit, null, "thread", null, null, maxTurns, {}, "desc");
   return { result, peak: maxRunning };
 }
 for (const [sizes, limit, maxTurns] of [

@@ -14,7 +14,7 @@ import requests
 APPCAST_URL = "https://persistent.oaistatic.com/codex-app-prod/appcast.xml"
 
 SPARKLE_VERIFY_KEY = Ed25519PublicKey.from_public_bytes(
-    base64.b64decode("rhcBvttuqDFriyNqwTQJR3L4UT1WjIK4QxtwtwusVic=", validate=True)
+    base64.b64decode("mNfr1v9t63BfgDtlw4C8lRvSY6uMggIXABDOCi3tS6k=", validate=True)
 )
 
 

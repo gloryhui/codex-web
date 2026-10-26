@@ -1,7 +1,6 @@
 #!/usr/bin/env node
-import { readdir, readFile, writeFile } from "node:fs/promises";
-import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { patchExtractedStartup } from "./extracted_startup.mjs";
 
 export async function prefetchTurnHeads(turns, load, itemLimit, budget) {
   if (!(itemLimit > 0) || !(budget > 0)) return null;
@@ -38,39 +37,38 @@ export function patchLatency(source) {
     if ([...source.matchAll(pattern)].length !== 1) throw Error(`Expected one ${label}`);
     source = source.replace(pattern, replacement);
   }
-  once(/f\.data\.map\(\(n\) => gx\(e\.sendRequest\.bind\(e\), r, n\.id, a, s, t\)\),\s*\)\s*: null;/g,
-    `f.data.map((n) => gx(e.sendRequest.bind(e), r, n.id, a, s, t)),
-        )
+  once(/Promise\.all\(p\.data\.map\(\(e\) => lT\(t, i, e\.id, o, c, n\)\)\)\s*: null;/g,
+    `Promise.all(p.data.map((e) => lT(t, i, e.id, o, c, n)))
       : window.__ELECTRON_SHIM__ != null
-        ? await (${prefetchTurnHeads.toString()})(f.data, (turn, limit) => gx(e.sendRequest.bind(e), r, turn.id, a, s, limit), t, y)
+        ? await (${prefetchTurnHeads.toString()})(p.data, (turn, limit) => lT(t, i, turn.id, o, c, limit), n, b)
         : null; /* codex-web:parallel-history */`,
     "serial history head-page branch");
   // A previous turn can consume the remaining global budget while heads load.
   // In that case retain the original smaller read/cursor, rather than truncating
   // an already paginated response or exceeding the upstream item budget.
-  once(/let a = b\?\.\[n\],\s*p =/g,
-    `let a = b?.[n];
-      if (window.__ELECTRON_SHIM__ != null && a?.items.length > Math.min(100, y, t - c.length)) a = void 0;
+  once(/let o = x\?\.\[e\],\s*p =/g,
+    `let o = x?.[e];
+      if (window.__ELECTRON_SHIM__ != null && o?.items.length > Math.min(100, b, n - s.length)) o = void 0;
       let p =`,
     "history budget validation");
-  once(/\(0, L8\.jsx\)\(y0l, \{/g,
-    '(0, L8.jsx)(window.__ELECTRON_SHIM__ != null ? h0l : y0l, {',
+  once(/\(0, wO\.jsx\)\(lO, \{/g,
+    '(0, wO.jsx)(window.__ELECTRON_SHIM__ != null ? aO : lO, {',
     "browser cached Statsig provider");
-  once(/let \{ client: S, isLoading: C \} = \(0, O0l\.useClientAsyncInit\)\(d, b, x\),\s*w;/g,
-    `let { client: S, isLoading: C } = (0, O0l.useClientAsyncInit)(d, b, x), w;
+  once(/let \{ client: S, isLoading: C \} = \(0, yO\.useClientAsyncInit\)\(d, b, x\),\s*w;/g,
+    `let { client: S, isLoading: C } = (0, yO.useClientAsyncInit)(d, b, x), w;
   codexWebRefreshBootstrap(S, v, g);`,
     "background bootstrap hook");
-  once(/function _0l\(e\) \{/g,
+  once(/function nO\(e\) \{/g,
     `/* codex-web:background-bootstrap */
 function codexWebRefreshBootstrap(client, context, beta) {
-  I8.useEffect(() => {
+  CO.useEffect(() => {
     if (window.__ELECTRON_SHIM__ == null || context.authMethod !== "chatgpt" || client.loadingStatus !== "Ready") return;
     let cancelled = false;
-    (${refreshBootstrap.toString()})(client, () => q$l({ ...context, beta }), () => !cancelled).catch(() => {});
+    (${refreshBootstrap.toString()})(client, () => bD({ ...context, beta }), () => !cancelled).catch(() => {});
     return () => { cancelled = true; };
   }, [client, client.loadingStatus, context, beta]);
 }
-function _0l(e) {`,
+function nO(e) {`,
     "background bootstrap implementation");
   return source;
 }
@@ -78,9 +76,6 @@ function _0l(e) {`,
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const dir = process.argv[2];
   if (!dir) throw Error("Usage: patch_codex_web_latency.mjs <webview-assets-dir>");
-  const files = (await readdir(dir)).filter((name) => /^app-initial-.*\.js$/.test(name));
-  if (files.length !== 1) throw Error("Expected one app-initial bundle");
-  const file = path.join(dir, files[0]);
-  await writeFile(file, patchLatency(await readFile(file, "utf8")));
-  console.log(`Parallelized history reads and background Statsig refresh in ${files[0]}`);
+  await patchExtractedStartup(dir, patchLatency);
+  console.log("Parallelized history reads and background Statsig refresh across extracted modules");
 }

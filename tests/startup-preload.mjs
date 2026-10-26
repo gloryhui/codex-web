@@ -1,3 +1,4 @@
+import { extractedBundle, extractedStartup } from "./extracted-bundles.mjs";
 import assert from "node:assert/strict";
 import { readFile, mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
 import os from "node:os";
@@ -59,17 +60,17 @@ await prewarmModels(client, { sendRequest: async () => { throw Error("offline");
 assert.equal(client.getQueryData([...key, "failed"]), undefined);
 client.clear();
 
-const bundle = await readFile(new URL("../scratch/asar/webview/assets/app-initial-c95ddb62696e.js", import.meta.url), "utf8");
+const bundle = await extractedStartup();
 const patched = patchModelPrewarm(bundle);
 assert.equal(patchModelPrewarm(patched), patched);
 assert.throws(() => patchModelPrewarm("unknown version"));
-const hook = patched.slice(patched.indexOf("function codexWebPrewarmModels(auth) {"), patched.indexOf("function p0l(e) {"));
+const hook = patched.slice(patched.indexOf("function codexWebPrewarmModels(auth) {"), patched.indexOf("function oNn(e, t, n = 100, r) {"));
 assert.ok(hook);
 for (const [web, auth, connected, expected] of [[false, "chatgpt", true, false], [true, "apikey", true, false], [true, "chatgpt", false, false], [true, "chatgpt", true, true]]) {
   let invoked = false;
   const scope = { get: () => connected ? ["local"] : [], query: { fetch: async () => ({ config: {} }) }, queryClient: { prefetchQuery: () => { invoked = true; return Promise.resolve(); } } };
-  const run = new Function("E", "J", "I8", "window", "dh", "ET", "gh", "_zn", "bC", "Xm", "ewt", `${hook};return codexWebPrewarmModels`)(
-    () => scope, {}, { useEffect: (effect) => effect() }, web ? { __ELECTRON_SHIM__: {} } : {}, {}, () => {}, () => request, () => key, {}, (config) => config, () => false);
+  const run = new Function("bs", "V", "ua", "window", "wg", "Z", "jht", "cNn", "fg", "kg", "oNn", "Ig", "dg", "Fmt", `${hook};return codexWebPrewarmModels`)(
+    () => scope, {}, () => ({ useEffect: (effect) => effect() }), web ? { __ELECTRON_SHIM__: {} } : {}, {}, () => {}, () => {}, () => {}, () => {}, () => request, () => key, {}, (config) => config, () => false);
   run({ authMethod: auth, isLoading: false });
   await new Promise(setImmediate);
   assert.equal(invoked, expected);

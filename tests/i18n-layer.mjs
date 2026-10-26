@@ -1,3 +1,4 @@
+import { extractedBundle, extractedStartup } from "./extracted-bundles.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import ts from "typescript";
@@ -12,7 +13,7 @@ new Function("electronShim", ts.transpileModule(adapterSource[0], {
 
 // Exercise the SDK's actual getter/override merge, which replaces custom get().
 // This catches accidentally using Dynamic Config's value field for a Layer.
-const bundle = await readFile(new URL("../scratch/asar/webview/assets/app-initial-c95ddb62696e.js", import.meta.url), "utf8");
+const bundle = await extractedStartup();
 const sdkSource = bundle.match(/function r\(e, t, n, r\) \{\s*return \{\s*name: e,[\s\S]*?e\._makeTypedGet = l;/);
 assert.ok(sdkSource, "Expected current extracted Statsig SDK merge contract");
 const sdk = {};
