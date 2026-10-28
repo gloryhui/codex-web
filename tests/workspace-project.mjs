@@ -2,12 +2,12 @@ import assert from "node:assert/strict";
 import { extractedBundle } from "./extracted-bundles.mjs";
 
 const source = await extractedBundle(/^app-primary-.*\.js$/);
-const start = source.indexOf("function ZEt(e,"), end = source.indexOf("function QEt(", start);
+const start = source.indexOf("function mN(e,"), end = source.indexOf("function hN(", start);
 assert.ok(start >= 0 && end > start);
 const fn = source.slice(start, end);
 for (const [web, device, expected] of [[true, "local", "folder"], [false, "local", "modal"], [true, "remote", "modal"]]) {
   const calls = [];
-  const create = new Function("window", "$Et", "Cx", "TT", "tDt", `${fn}; return ZEt`)(
+  const create = new Function("window", "gN", "vw", "v_", "YDt", `${fn}; return mN`)(
     web ? { __ELECTRON_SHIM__: {} } : {},
     (scope) => calls.push(["folder", scope]),
     (options) => calls.push(["telemetry", options]),

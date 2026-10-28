@@ -1,9 +1,9 @@
---- a/.vite/build/main-0FVbxCQU.js
-+++ b/.vite/build/main-0FVbxCQU.js
-@@ -222921,7 +222921,7 @@
-   return new u.Nt(r, t, n).getRemoteMain();
+--- a/.vite/build/main-UOTY8NmV.js
++++ b/.vite/build/main-UOTY8NmV.js
+@@ -229976,7 +229976,7 @@
+   return new u.Pt(r, t, n).getRemoteMain();
  }
- var Z_t = class {
+ var aEt = class {
 -    encodingLevel = `structuredClonable`;
 +    encodingLevel = `jsonCompatible`;
      constructor(e) {
@@ -11,10 +11,10 @@
          e.start(),
 --- a/.vite/build/preload.js
 +++ b/.vite/build/preload.js
-@@ -206,8 +206,7 @@
-     getDesktopUserAgent: () => C({ appVersion: O.appVersion }),
-     getAppSessionId: () => O.codexAppSessionId,
-     getBuildFlavor: () => k,
+@@ -209,8 +209,7 @@
+     getDesktopUserAgent: () => T({ appVersion: A.appVersion }),
+     getAppSessionId: () => A.codexAppSessionId,
+     getBuildFlavor: () => j,
 -    isDeviceCheckSupported: () =>
 -      process.platform === `darwin` && process.arch === `arm64`,
 +    isDeviceCheckSupported: () => false,
@@ -23,32 +23,32 @@
    };
 --- a/.vite/build/worker.js
 +++ b/.vite/build/worker.js
-@@ -114606,6 +114606,7 @@
-   let r = CM(e.appVersion),
+@@ -114945,6 +114945,7 @@
+   let r = PM(e.appVersion),
      i = e.buildFlavor !== `prod`;
-   (Ase({
+   (Tse({
 +    enabled: !1,
      dsn: e.dsn,
      transport: (e) => {
-       let t = Xl(e.bufferSize ?? 64);
---- a/webview/assets/app-initial-feb30b196d11.js
-+++ b/webview/assets/app-initial-feb30b196d11.js
-@@ -279429,6 +279429,7 @@
-     n = zwe(e.appVersion),
+       let t = Zl(e.bufferSize ?? 64);
+--- a/webview/assets/app-initial-bc8256c3cccb.js
++++ b/webview/assets/app-initial-bc8256c3cccb.js
+@@ -270049,6 +270049,7 @@
+     n = uxe(e.appVersion),
      r = e.buildFlavor !== `prod`;
-   (vCi({
+   (cvi({
 +    enabled: !1,
-     beforeBreadcrumb: f_e,
-     beforeSend: xSe,
+     beforeBreadcrumb: Zge,
+     beforeSend: I_e,
      dsn: e.dsn,
-@@ -494237,14 +494238,11 @@
-             : CZ({ schema: w, text: e })),
-     ee != null && f != null && !m && (ee = Zha(ee, f, e ?? void 0)));
-   let B = f == null ? null : hRs(m ? f : null, (e) => aRs(S, e)),
+@@ -489880,14 +489881,11 @@
+             : $Q({ schema: T, text: e })),
+     B != null && f != null && !m && (B = Pua(B, f, e ?? void 0)));
+   let te = f == null ? null : CRs(m ? f : null, (e) => pRs(C, e)),
 +    inputModeDisabled = !1,
 +    getAttributes = () => ({ "aria-multiline": `true`, dir: `auto`, role: `textbox`, spellcheck: `true`, tabindex: `0`, ...(inputModeDisabled ? {} : { inputmode: `none` }) }),
-+    setPointerInputMode = (e) => { inputModeDisabled !== e && ((inputModeDisabled = e), te.isDestroyed || te.setProps({ attributes: getAttributes })); },
-     te = new Xee(null, {
++    setPointerInputMode = (e) => { inputModeDisabled !== e && ((inputModeDisabled = e), re.isDestroyed || re.setProps({ attributes: getAttributes })); },
+     re = new ne(null, {
 -      attributes: {
 -        "aria-multiline": `true`,
 -        dir: `auto`,
@@ -57,49 +57,49 @@
 -        tabindex: `0`,
 -      },
 +      attributes: getAttributes,
-       transformPastedText: N.transformPastedText,
+       transformPastedText: P.transformPastedText,
        transformPastedHTML(e) {
-         if ((N.transformPastedHTML(e), e.length > 1e5)) return ` `;
-@@ -494418,7 +494416,9 @@
+         if ((P.transformPastedHTML(e), e.length > 1e5)) return ` `;
+@@ -490061,7 +490059,9 @@
        },
        handleDOMEvents: {
-         keydown: (e, t) => N.handleKeyEvent(t),
--        mousedown: (e, t) => N.handleMouseDown(t),
-+        mousedown: (e, t) => (setPointerInputMode(!0), N.handleMouseDown(t)),
+         keydown: (e, t) => P.handleKeyEvent(t),
+-        mousedown: (e, t) => P.handleMouseDown(t),
++        mousedown: (e, t) => (setPointerInputMode(!0), P.handleMouseDown(t)),
 +        touchstart: () => (setPointerInputMode(!0), !1),
 +        blur: () => (setPointerInputMode(!1), !1),
          keyup(e, t) {
-           N.handleKeyEvent(t);
+           P.handleKeyEvent(t);
            let { $from: n, empty: r } = e.state.selection;
-@@ -529794,7 +529794,7 @@
-     c = Gn(),
-     l = fs(),
+@@ -525488,7 +525488,7 @@
+     c = Ma(),
+     l = ai(),
      u = n != null,
 -    d = o?.prefillPrompt,
 +    d = o?.prefillPrompt ?? new URLSearchParams(window.__ELECTRON_SHIM__?.currentSearch ?? window.location.search).get(`prompt`),
      f = o?.prefillPromptFormat,
      p = o?.prefillPromptOnlyIfEmpty,
      m = o?.prefillLibraryFolders,
---- a/webview/assets/app-primary-7d7313419f84.js
-+++ b/webview/assets/app-primary-7d7313419f84.js
-@@ -30474,6 +30474,7 @@
+--- a/webview/assets/app-primary-b7f335b763ca.js
++++ b/webview/assets/app-primary-b7f335b763ca.js
+@@ -30499,6 +30499,7 @@
    }))();
  }
- function ZEt(e, { device: t = `local`, hostId: n, onProjectCreated: r } = {}) {
-+  if (window.__ELECTRON_SHIM__ != null && t === `local`) return $Et(e); /* codex-web:server-folder-project */
-   (Cx({ scope: e, projectType: t }),
-     TT(e, tDt, {
+ function mN(e, { device: t = `local`, hostId: n, onProjectCreated: r } = {}) {
++  if (window.__ELECTRON_SHIM__ != null && t === `local`) return gN(e); /* codex-web:server-folder-project */
+   (vw({ scope: e, projectType: t }),
+     v_(e, YDt, {
        initialRequest:
-@@ -35069,7 +35070,7 @@
-         "--app-shell-root-banner-height": ue,
-         "--app-shell-navigation-rail-width": pt,
-         "--app-shell-application-menu-height": mt,
--        "--spacing-token-safe-header-left": ht,
+@@ -35107,7 +35108,7 @@
+         "--app-shell-root-banner-height": ce,
+         "--app-shell-navigation-rail-width": ct,
+         "--app-shell-application-menu-height": lt,
+-        "--spacing-token-safe-header-left": ut,
 +        "--spacing-token-safe-header-left": `0px`,
-         "--spacing-token-safe-header-right": gt,
+         "--spacing-token-safe-header-right": dt,
          "--app-shell-animated-left-panel-width": void 0,
          width: `calc(100vw / var(--codex-window-zoom))`,
-@@ -292947,9 +292948,9 @@
+@@ -293513,9 +293514,9 @@
      );
    }
    let xe =
@@ -109,20 +109,20 @@
 -        : (_?.prefillPrompt ?? void 0),
 +        : (_?.prefillPrompt ?? void 0)) ?? new URLSearchParams(window.__ELECTRON_SHIM__?.currentSearch ?? window.location.search).get(`prompt`),
      Se;
-   t[64] === h ? (Se = t[65]) : ((Se = jo(h)), (t[64] = h), (t[65] = Se));
+   t[58] === h ? (Se = t[59]) : ((Se = lu(h)), (t[58] = h), (t[59] = Se));
    let Ce = Se,
---- a/webview/assets/initialize-app-host-services-5891c906a171.js
-+++ b/webview/assets/initialize-app-host-services-5891c906a171.js
-@@ -1706,10 +1706,17 @@
+--- a/webview/assets/initialize-app-host-services-4851169dc7ce.js
++++ b/webview/assets/initialize-app-host-services-4851169dc7ce.js
+@@ -1760,10 +1760,17 @@
      i;
    t[0] === r
      ? (i = t[1])
 -    : ((i = () =>
--        Le([{ path: `*`, Component: XS, ErrorBoundary: ZS }], {
+-        Pt([{ path: `*`, Component: pC, ErrorBoundary: mC }], {
 -          initialEntries: r,
 -        })),
 +    : ((i = () => {
-+        let router = Le([{ path: `*`, Component: XS, ErrorBoundary: ZS }], { initialEntries: r ?? [window.__ELECTRON_SHIM__?.initialRoute ?? `/`] });
++        let router = Pt([{ path: `*`, Component: pC, ErrorBoundary: mC }], { initialEntries: r ?? [window.__ELECTRON_SHIM__?.initialRoute ?? `/`] });
 +        let lastKey = router.state.location.key;
 +        if (window.__ELECTRON_SHIM__?.onMemoryNavigationChanged)
 +          router.subscribe((state) => {
@@ -134,15 +134,15 @@
 +      }),
        (t[0] = r),
        (t[1] = i));
-   let [a] = (0, $S.useState)(i),
-@@ -7901,6 +7908,8 @@
- function hO(e) {
+   let [a] = (0, gC.useState)(i),
+@@ -8006,6 +8013,8 @@
+ function JO(e) {
    let t = {
-     ...AO,
+     ...lk,
 +    overrideAdapter: window.__ELECTRON_SHIM__?.overrideAdapter,
 +    loggingEnabled: `disabled`,
      enableLiveValuesAutoRefresh: !0,
-     ...(e === !0 && !yl()
+     ...(e === !0 && !ho()
        ? {}
 --- a/webview/index.html
 +++ b/webview/index.html
@@ -152,7 +152,7 @@
      <!-- PROD_BASE_TAG_HERE -->
 -    <meta
 -      http-equiv="Content-Security-Policy"
--      content="default-src &#39;none&#39;; img-src &#39;self&#39; app: blob: data: https:; child-src &#39;self&#39; blob: codex-sandbox://*.web-sandbox.oaiusercontent.com codex-sandbox://web-sandbox.oaiusercontent.com https://*.web-sandbox.oaiusercontent.com https://web-sandbox.oaiusercontent.com; frame-src &#39;self&#39; blob: codex-sandbox://*.web-sandbox.oaiusercontent.com codex-sandbox://web-sandbox.oaiusercontent.com https://*.web-sandbox.oaiusercontent.com https://cdn.plaid.com https://cdn.platform.openai.com https://codepen.io https://docs.google.com/document/d/ https://docs.google.com/presentation/d/ https://docs.google.com/spreadsheets/d/ https://drive.google.com/file/d/ https://embed.apple-mapkit.com/v1/embed https://inquiry.withpersona.com https://mfe.prod.us-exp-api.experiancs.com https://mfe.uat.us-exp-api.experiancs.com https://player.vimeo.com/video/ https://web-sandbox.oaiusercontent.com https://www.google.com/maps https://www.google.com/maps/embed https://www.youtube.com; worker-src &#39;self&#39; blob:; script-src &#39;self&#39; &#39;sha256-Z2/iFzh9VMlVkEOar1f/oSHWwQk3ve1qk/C2WdsC4Xk=&#39; &#39;wasm-unsafe-eval&#39; https://cdn.plaid.com/link/v2/stable/link-initialize.js https://persistent.oaistatic.com/voice/silero-vad-v6/ort-wasm-simd-threaded.30dd851d9c00622940500f71ddd2ff8820c5cb65270816080175b958705385a8.module.js; style-src &#39;self&#39; &#39;unsafe-inline&#39;; font-src &#39;self&#39; data:; media-src &#39;self&#39; app: blob: data: https:; connect-src &#39;self&#39; blob: https://ab.chatgpt.com https://api.mapbox.com https://cdn.openai.com https://events.mapbox.com https://learn.chatgpt.com https://persistent.oaistatic.com https://production.plaid.com https://sandbox.plaid.com wss://*.api.openai.com/ws wss://*.api.openai.org/ws wss://chatgpt-staging.com/backend-api/pages/realtime-broker/ wss://chatgpt.com wss://ws.chatgpt-staging.com wss://ws.chatgpt.com;"
+-      content="default-src &#39;none&#39;; img-src &#39;self&#39; app: blob: data: https:; child-src &#39;self&#39; blob: codex-sandbox://*.web-sandbox.oaiusercontent.com codex-sandbox://web-sandbox.oaiusercontent.com https://*.web-sandbox.oaiusercontent.com https://web-sandbox.oaiusercontent.com; frame-src &#39;self&#39; blob: codex-sandbox://*.web-sandbox.oaiusercontent.com codex-sandbox://web-sandbox.oaiusercontent.com https://*.web-sandbox.oaiusercontent.com https://cdn.plaid.com https://cdn.platform.openai.com https://codepen.io https://docs.google.com/document/d/ https://docs.google.com/presentation/d/ https://docs.google.com/spreadsheets/d/ https://drive.google.com/file/d/ https://embed.apple-mapkit.com/v1/embed https://inquiry.withpersona.com https://mfe.prod.us-exp-api.experiancs.com https://mfe.uat.us-exp-api.experiancs.com https://player.vimeo.com/video/ https://web-sandbox.oaiusercontent.com https://www.google.com/maps https://www.google.com/maps/embed https://www.youtube.com; worker-src &#39;self&#39; blob:; script-src &#39;self&#39; &#39;sha256-Z2/iFzh9VMlVkEOar1f/oSHWwQk3ve1qk/C2WdsC4Xk=&#39; &#39;wasm-unsafe-eval&#39; https://cdn.plaid.com/link/v2/stable/link-initialize.js https://persistent.oaistatic.com/voice/silero-vad-v6/ort-wasm-simd-threaded.3101568d9c131ea89d4c693fbff3e0d0c3dcbcf1baa09fd871b86662a071bd1a.module.js; style-src &#39;self&#39; &#39;unsafe-inline&#39;; font-src &#39;self&#39; data:; media-src &#39;self&#39; app: blob: data: https:; connect-src &#39;self&#39; blob: https://ab.chatgpt.com https://api.mapbox.com https://cdn.openai.com https://events.mapbox.com https://learn.chatgpt.com https://persistent.oaistatic.com https://production.plaid.com https://sandbox.plaid.com wss://*.api.openai.com/ws wss://*.api.openai.org/ws wss://chatgpt-staging.com/backend-api/pages/realtime-broker/ wss://chatgpt.com wss://ws.chatgpt-staging.com wss://ws.chatgpt.com;"
 -    />
 +    <base href="/" />
 +    <script type="module" src="./assets/preload.js"></script>
@@ -164,9 +164,9 @@
      <style>
        /* Dependency CSS can load before app.css, so establish Tailwind's layer order here. */
        @layer theme, base, components, utilities;
-@@ -160,6 +160,30 @@
+@@ -165,6 +165,30 @@
        crossorigin
-       href="./assets/app-shared-bd3e4e649b69.css"
+       href="./assets/app-shared-398c891a59df.css"
      />
 +    <style>
 +      .main-surface {

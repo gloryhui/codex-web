@@ -18,23 +18,23 @@ export function patchStartup(source) {
     }
     source = source.replace(pattern, replacement);
   }
-  once(/\(xD = 1e4\)/g,
-    "(xD = window.__ELECTRON_SHIM__ != null ? 2000 : 1e4) /* codex-web:bounded-statsig-startup */",
+  once(/\(eO = 1e4\)/g,
+    "(eO = window.__ELECTRON_SHIM__ != null ? 2000 : 1e4) /* codex-web:bounded-statsig-startup */",
     "post-login Statsig timeout");
-  once(/async function uO\(e, t\) \{/g,
-    "async function uO(e, t) {\nif (window.__ELECTRON_SHIM__ != null) { t.current += 1; return bD(e); }",
+  once(/async function UO\(e, t\) \{/g,
+    "async function UO(e, t) {\nif (window.__ELECTRON_SHIM__ != null) { t.current += 1; return $D(e); }",
     "post-login bootstrap retry loop");
   once(/i\s*\.initializeAsync\(\)\s*\.catch\(t\.Log\.error\)/g,
     `(${initializeStatsig.toString()})(i, window.__ELECTRON_SHIM__ != null).catch(t.Log.error)`,
     "Statsig React hook initialization");
-  once(/\.\.\.AO\.networkConfig,\s*preventAllNetworkTraffic: !1,/g,
-    "...AO.networkConfig,\n...(window.__ELECTRON_SHIM__ != null ? { networkTimeoutMs: 2000 } : {}),\npreventAllNetworkTraffic: !1,",
+  once(/\.\.\.lk\.networkConfig,\s*preventAllNetworkTraffic: !1,/g,
+    "...lk.networkConfig,\n...(window.__ELECTRON_SHIM__ != null ? { networkTimeoutMs: 2000 } : {}),\npreventAllNetworkTraffic: !1,",
     "Statsig background network config");
-  once(/\(E = \(0, \$V\.jsx\)\(`div`, \{ className: _, children: x \}\)\)/g,
-    '(E = (0, $V.jsx)(`div`, { className: _, "data-codex-loading-stage": o ?? "unlabeled", children: x }))',
+  once(/\(E = \(0, jH\.jsx\)\(`div`, \{ className: _, children: x \}\)\)/g,
+    '(E = (0, jH.jsx)(`div`, { className: _, "data-codex-loading-stage": o ?? "unlabeled", children: x }))',
     "loading-stage DOM marker");
   once(/if \(r\.isLoading \|\| a \|\| s \|\| c\) \{/g,
-    'if (r.isLoading || a || s || c) {\nif (window.__ELECTRON_SHIM__ != null) return (0, wO.jsx)(Yg, { debugName: `Startup inputs auth=${!!r.isLoading} version=${!!a} system=${!!s} config=${!!c}` });',
+    'if (r.isLoading || a || s || c) {\nif (window.__ELECTRON_SHIM__ != null) return (0, rk.jsx)(V_, { debugName: `Startup inputs auth=${!!r.isLoading} version=${!!a} system=${!!s} config=${!!c}` });',
     "startup input diagnostics");
   return source;
 }

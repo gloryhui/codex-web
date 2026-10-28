@@ -64,12 +64,12 @@ const bundle = await extractedStartup();
 const patched = patchModelPrewarm(bundle);
 assert.equal(patchModelPrewarm(patched), patched);
 assert.throws(() => patchModelPrewarm("unknown version"));
-const hook = patched.slice(patched.indexOf("function codexWebPrewarmModels(auth) {"), patched.indexOf("function oNn(e, t, n = 100, r) {"));
+const hook = patched.slice(patched.indexOf("function codexWebPrewarmModels(auth) {"), patched.indexOf("function qSn(e, t, n = 100, r) {"));
 assert.ok(hook);
 for (const [web, auth, connected, expected] of [[false, "chatgpt", true, false], [true, "apikey", true, false], [true, "chatgpt", false, false], [true, "chatgpt", true, true]]) {
   let invoked = false;
   const scope = { get: () => connected ? ["local"] : [], query: { fetch: async () => ({ config: {} }) }, queryClient: { prefetchQuery: () => { invoked = true; return Promise.resolve(); } } };
-  const run = new Function("bs", "V", "ua", "window", "wg", "Z", "jht", "cNn", "fg", "kg", "oNn", "Ig", "dg", "Fmt", `${hook};return codexWebPrewarmModels`)(
+  const run = new Function("Or", "Q", "Pr", "window", "cg", "V", "Tct", "YSn", "rg", "pg", "qSn", "yg", "ng", "Zst", `${hook};return codexWebPrewarmModels`)(
     () => scope, {}, () => ({ useEffect: (effect) => effect() }), web ? { __ELECTRON_SHIM__: {} } : {}, {}, () => {}, () => {}, () => {}, () => {}, () => request, () => key, {}, (config) => config, () => false);
   run({ authMethod: auth, isLoading: false });
   await new Promise(setImmediate);

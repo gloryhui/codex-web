@@ -19,9 +19,9 @@ const source = await extractedStartup();
 const patched = patchLatency(source);
 assert.equal(patchLatency(patched), patched);
 assert.throws(() => patchLatency("unknown upstream"));
-const gx = patched.slice(patched.indexOf("async function lT("), patched.indexOf("async function Y6t("));
-const m6t = patched.slice(patched.indexOf("async function Y6t("), patched.indexOf("async function X6t("));
-const make = (web) => new Function("window", "cs", "Qw", "X6t", "Z6t", `${gx}\n${m6t}\nreturn Y6t`)(
+const gx = patched.slice(patched.indexOf("async function gE("), patched.indexOf("async function v1t("));
+const m6t = patched.slice(patched.indexOf("async function v1t("), patched.indexOf("async function y1t("));
+const make = (web) => new Function("window", "Jn", "iE", "y1t", "b1t", `${gx}\n${m6t}\nreturn v1t`)(
   web ? { __ELECTRON_SHIM__: {} } : {}, (id) => id, () => [], () => { throw Error("Unexpected progressive path"); }, async () => ({ openingUserMessageId: null }));
 async function readHistory(web, sizes, turnLimit = 1000, maxTurns = 5, fail = false) {
   let running = 0, maxRunning = 0;

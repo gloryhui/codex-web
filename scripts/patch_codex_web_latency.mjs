@@ -37,10 +37,10 @@ export function patchLatency(source) {
     if ([...source.matchAll(pattern)].length !== 1) throw Error(`Expected one ${label}`);
     source = source.replace(pattern, replacement);
   }
-  once(/Promise\.all\(p\.data\.map\(\(e\) => lT\(t, i, e\.id, o, c, n\)\)\)\s*: null;/g,
-    `Promise.all(p.data.map((e) => lT(t, i, e.id, o, c, n)))
+  once(/Promise\.all\(p\.data\.map\(\(e\) => gE\(t, i, e\.id, o, c, n\)\)\)\s*: null;/g,
+    `Promise.all(p.data.map((e) => gE(t, i, e.id, o, c, n)))
       : window.__ELECTRON_SHIM__ != null
-        ? await (${prefetchTurnHeads.toString()})(p.data, (turn, limit) => lT(t, i, turn.id, o, c, limit), n, b)
+        ? await (${prefetchTurnHeads.toString()})(p.data, (turn, limit) => gE(t, i, turn.id, o, c, limit), n, b)
         : null; /* codex-web:parallel-history */`,
     "serial history head-page branch");
   // A previous turn can consume the remaining global budget while heads load.
@@ -51,24 +51,24 @@ export function patchLatency(source) {
       if (window.__ELECTRON_SHIM__ != null && o?.items.length > Math.min(100, b, n - s.length)) o = void 0;
       let p =`,
     "history budget validation");
-  once(/\(0, wO\.jsx\)\(lO, \{/g,
-    '(0, wO.jsx)(window.__ELECTRON_SHIM__ != null ? aO : lO, {',
+  once(/\(0, rk\.jsx\)\(HO, \{/g,
+    '(0, rk.jsx)(window.__ELECTRON_SHIM__ != null ? BO : HO, {',
     "browser cached Statsig provider");
-  once(/let \{ client: S, isLoading: C \} = \(0, yO\.useClientAsyncInit\)\(d, b, x\),\s*w;/g,
-    `let { client: S, isLoading: C } = (0, yO.useClientAsyncInit)(d, b, x), w;
+  once(/let \{ client: S, isLoading: C \} = \(0, QO\.useClientAsyncInit\)\(d, b, x\),\s*w;/g,
+    `let { client: S, isLoading: C } = (0, QO.useClientAsyncInit)(d, b, x), w;
   codexWebRefreshBootstrap(S, v, g);`,
     "background bootstrap hook");
-  once(/function nO\(e\) \{/g,
+  once(/function FO\(e\) \{/g,
     `/* codex-web:background-bootstrap */
 function codexWebRefreshBootstrap(client, context, beta) {
-  CO.useEffect(() => {
+  nk.useEffect(() => {
     if (window.__ELECTRON_SHIM__ == null || context.authMethod !== "chatgpt" || client.loadingStatus !== "Ready") return;
     let cancelled = false;
-    (${refreshBootstrap.toString()})(client, () => bD({ ...context, beta }), () => !cancelled).catch(() => {});
+    (${refreshBootstrap.toString()})(client, () => $D({ ...context, beta }), () => !cancelled).catch(() => {});
     return () => { cancelled = true; };
   }, [client, client.loadingStatus, context, beta]);
 }
-function nO(e) {`,
+function FO(e) {`,
     "background bootstrap implementation");
   return source;
 }

@@ -35,17 +35,17 @@ Use the Codex Desktop interface in your browser, with Codex running on your own 
 
 ### 当前验证基线
 
-截至 **2026-10-26**，最近一次提取和验证的组合为：
+截至 **2026-10-28**，最近一次提取和验证的组合为：
 
 | 项目 | 已验证版本 / 状态 |
 | --- | --- |
-| Desktop 前端资源 | `26.1021.31345`（build `21828`） |
-| Codex CLI | `0.164.0`（正式版） |
+| Desktop 前端资源 | `26.1023.51421`（build `22530`） |
+| Codex CLI | `0.165.0`（正式版） |
 | Node.js | macOS `24.22.1`；Ubuntu `22.23.4` |
 | 宿主 | macOS 本地环境、Ubuntu 服务端 |
 | 模型列表 | 已确认包含 `gpt-6.1-sol`；实际可用模型以账号权限和 CLI 返回为准 |
 
-这些版本记录可复现的验证结果，不是长期版本上限。跟进官方更新时，会同时检查前端与 CLI 的兼容性。图片/文件粘贴、多标签、断线恢复、目录选择、复制降级和窄屏布局已有浏览器自动化验证；具体记录见 [本次升级与回归记录](docs/upgrades/2026-10-26-desktop-26.1021.31345.md)。真机软键盘、不同浏览器的触控体验仍需实际使用确认。
+这些版本记录可复现的验证结果，不是长期版本上限。跟进官方更新时，会同时检查前端与 CLI 的兼容性。图片/文件粘贴、多标签、断线恢复、目录选择、复制降级和窄屏布局已有浏览器自动化验证；具体记录见 [本次升级与回归记录](docs/upgrades/2026-10-28-desktop-26.1023.51421.md)。真机软键盘、不同浏览器的触控体验仍需实际使用确认。
 
 ### 从源码运行
 
@@ -143,17 +143,17 @@ This fork focuses on remote workflows, Chinese localization, mobile interaction,
 
 ### Validated baseline
 
-As of **2026-10-06**, the most recently extracted and validated combination is:
+As of **2026-10-28**, the most recently extracted and validated combination is:
 
 | Component | Validated version / status |
 | --- | --- |
-| Desktop frontend assets | `26.930.51102` |
-| Codex CLI | `0.164.0`（正式版） |
+| Desktop frontend assets | `26.1023.51421` (build `22530`) |
+| Codex CLI | `0.165.0`（正式版） |
 | Node.js | macOS `24.22.1`；Ubuntu `22.23.4` |
 | Hosts | Local macOS and an Ubuntu server |
 | Model list | Confirmed to include `gpt-6.1-sol`; actual availability depends on the account and CLI response |
 
-These versions record reproducible validation results, not permanent version limits. Upstream upgrades include a review of frontend and CLI compatibility. Browser automation has covered pasted attachments, multiple tabs, reconnection, directory selection, clipboard fallback, and narrow-screen layouts. See the [upgrade and regression record](docs/upgrades/2026-10-06-desktop-26.930.51102.md). Real-device keyboards and touch behavior across browsers still require hands-on verification.
+These versions record reproducible validation results, not permanent version limits. Upstream upgrades include a review of frontend and CLI compatibility. Browser automation has covered pasted attachments, multiple tabs, reconnection, directory selection, clipboard fallback, and narrow-screen layouts. See the [upgrade and regression record](docs/upgrades/2026-10-28-desktop-26.1023.51421.md). Real-device keyboards and touch behavior across browsers still require hands-on verification.
 
 ### Run from source
 

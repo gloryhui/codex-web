@@ -15,18 +15,18 @@ assert.equal(async, 1);
 await assert.rejects(initializeStatsig({ initializeSync() { throw Error("invalid cache"); } }, true), /invalid cache/);
 
 const fixture = `
-(xD = 1e4)
-async function uO(e, t) { return retry(e); }
+(eO = 1e4)
+async function UO(e, t) { return retry(e); }
 i.initializeAsync().catch(t.Log.error)
-({...AO.networkConfig, preventAllNetworkTraffic: !1,})
-(E = (0, $V.jsx)(\`div\`, { className: _, children: x }))
+({...lk.networkConfig, preventAllNetworkTraffic: !1,})
+(E = (0, jH.jsx)(\`div\`, { className: _, children: x }))
 if (r.isLoading || a || s || c) { return null; }
 `;
 const patched = patchStartup(fixture);
 assert.equal(patchStartup(patched), patched);
 assert.throws(() => patchStartup(fixture + fixture));
-assert.throws(() => patchStartup(fixture.replace("xD", "changed")));
-const bootstrap = new Function("window", "bD", "retry", `${patched.match(/async function uO[\s\S]*?return retry\(e\); \}/)[0]};return uO`);
+assert.throws(() => patchStartup(fixture.replace("eO", "changed")));
+const bootstrap = new Function("window", "$D", "retry", `${patched.match(/async function UO[\s\S]*?return retry\(e\); \}/)[0]};return UO`);
 let attempts = 0;
 const read = bootstrap({ __ELECTRON_SHIM__: {} }, async () => { attempts++; throw Error("offline"); }, () => { throw Error("must not retry"); });
 const count = { current: 0 };

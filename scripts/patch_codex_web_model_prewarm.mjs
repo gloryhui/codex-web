@@ -29,24 +29,24 @@ export function patchModelPrewarm(source) {
   const hook = `
 /* codex-web:model-prewarm */
 export function codexWebPrewarmModels(auth) {
-  Z(); jht(); cNn(); fg();
-  let scope = bs(V);
-  ua().useEffect(() => {
-    if (window.__ELECTRON_SHIM__ == null || auth.isLoading || auth.authMethod !== "chatgpt" || !scope.get(wg).includes("local")) return;
+  V(); Tct(); YSn(); rg();
+  let scope = Or(Q);
+  Pr().useEffect(() => {
+    if (window.__ELECTRON_SHIM__ == null || auth.isLoading || auth.authMethod !== "chatgpt" || !scope.get(cg).includes("local")) return;
     let cancelled = false;
     (async () => {
-      const response = await scope.query.fetch(Ig, { hostId: "local", cwd: null, failClosed: true });
+      const response = await scope.query.fetch(yg, { hostId: "local", cwd: null, failClosed: true });
       if (cancelled) return;
-      const config = dg(response.config);
-      const key = (${modelQueryKey.toString()})(oNn("local", auth.authMethod, 100), config, Fmt(config));
-      await (${prewarmModels.toString()})(scope.queryClient, kg(scope, "local"), key);
+      const config = ng(response.config);
+      const key = (${modelQueryKey.toString()})(qSn("local", auth.authMethod, 100), config, Zst(config));
+      await (${prewarmModels.toString()})(scope.queryClient, pg(scope, "local"), key);
     })().catch(() => {});
     return () => { cancelled = true; };
   }, [scope, auth.isLoading, auth.authMethod, auth.accountId, auth.userId]);
 }
 `;
-  if (source.split("function oNn(e, t, n = 100, r) {").length !== 2) throw Error("Missing native model key helper");
-  source = source.replace("function oNn(e, t, n = 100, r) {", hook + "\nfunction oNn(e, t, n = 100, r) {");
+  if (source.split("function qSn(e, t, n = 100, r) {").length !== 2) throw Error("Missing native model key helper");
+  source = source.replace("function qSn(e, t, n = 100, r) {", hook + "\nfunction qSn(e, t, n = 100, r) {");
   return source.replace(anchor, (match) => match.replace("t[5] === p", "codexWebPrewarmModels(n);\n  t[5] === p"));
 }
 

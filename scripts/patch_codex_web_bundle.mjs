@@ -15,6 +15,7 @@ const nativeIntlGetter =
 let wslSettersPatched = 0;
 let nativeIntlGettersPatched = 0;
 let rendererWindowFactoriesPatched = 0;
+let gitWorkerFallbacksPatched = 0;
 
 for (const entry of await readdir(buildDir, { withFileTypes: true })) {
   if (!entry.isFile() || !entry.name.endsWith(".js")) continue;
@@ -46,6 +47,18 @@ for (const entry of await readdir(buildDir, { withFileTypes: true })) {
     },
   );
 
+  // Desktop now prefers an Electron utility process for Git. The same bundle
+  // retains its real worker_threads implementation, which also works in Web.
+  let gitWorkerFallbacks = 0;
+  patched = patched.replace(
+    /if \(this\.id === `git`\) \{\s*let t = new ([\w$]+)\.MessageChannelMain\(\),/g,
+    (_match, electron) => {
+      gitWorkerFallbacks++;
+      return `if (this.id === \`git\` && typeof ${electron}.utilityProcess?.fork === "function") { /* codex-web:git-worker-thread-fallback */\n      let t = new ${electron}.MessageChannelMain(),`;
+    },
+  );
+  gitWorkerFallbacksPatched += gitWorkerFallbacks;
+
   patched = patched.replace(
     /windowManager:\s*([A-Za-z_$][\w$]*),[\s\S]{0,1000}?setWindowContext:\s*\(([A-Za-z_$][\w$]*)\)\s*=>\s*\{\s*([A-Za-z_$][\w$]*)\s*=\s*\2;/g,
     (match, windowManager) => {
@@ -69,7 +82,8 @@ for (const entry of await readdir(buildDir, { withFileTypes: true })) {
   if (
     fileWslSettersPatched > 0 ||
     fileNativeIntlGettersPatched > 0 ||
-    fileRendererWindowFactoriesPatched > 0
+    fileRendererWindowFactoriesPatched > 0 ||
+    gitWorkerFallbacks > 0
   ) {
     await writeFile(filePath, patched);
     wslSettersPatched += fileWslSettersPatched;
@@ -89,7 +103,12 @@ if (rendererWindowFactoriesPatched !== 1) {
     `Expected one renderer window factory, found ${rendererWindowFactoriesPatched}`,
   );
 }
+if (gitWorkerFallbacksPatched !== 1) {
+  throw new Error(
+    `Expected one Git utility-process fallback, found ${gitWorkerFallbacksPatched}`,
+  );
+}
 
 console.log(
-  `Patched ${wslSettersPatched} WSL setter(s), ${nativeIntlGettersPatched} NativeIntl getter(s), and ${rendererWindowFactoriesPatched} renderer window factory`,
+  `Patched ${wslSettersPatched} WSL setter(s), ${nativeIntlGettersPatched} NativeIntl getter(s), ${rendererWindowFactoriesPatched} renderer window factory and ${gitWorkerFallbacksPatched} Git worker fallback`,
 );
